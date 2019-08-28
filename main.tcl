@@ -42,14 +42,20 @@ proc count_credentials {credentials} {
     return [dict size $credentials]
 }
 
+proc output_credential {name credential args} {
+    lassign $credential identity password
+    set mask_flag [== $args "-mask"]
+    set passwd_out [expr {$mask_flag ? [sha1 $password] : $password}]   
+    puts ""
+    puts "Name: $name"
+    puts "Identity: $identity"
+    puts "Password: $passwd_out"
+}
+
 proc show_credentials {credentials} {
     puts "Stored credentials: [count_credentials $credentials]"
     foreach {name credential} $credentials {
-        lassign $credential identity password
-        puts ""
-        puts "Name: $name"
-        puts "Identity: $identity"
-        puts "Password: [sha1 $password]"
+        output_credential $name $credential -mask
     }
 }
 
@@ -71,6 +77,17 @@ proc delete_credential {credentials} {
     show_credentials $credentials
 }
 
+proc reveal_credential {credentials} {
+    prompt "Reveal credential:"
+    gets stdin name
+    try {
+        set credential [dict get $credentials $name]
+        output_credential $name $credential
+    } on error {message} {
+        puts "Credential '$name' not found."
+    }
+}
+
 switch $operation {
     insert  -
     add     -
@@ -78,12 +95,13 @@ switch $operation {
     modify  {upsert_credential $credentials}
     delete  -
     remove  {delete_credential $credentials}
+    reveal  {reveal_credential $credentials}
     show    -
     list    -
     display -
     inspect {show_credentials $credentials}
     default {
         puts "usage: $argv0 <operation>"
-        puts "operations available: insert | update | delete | show"
+        puts "operations available: insert | update | delete | reveal | show"
     }
 }
