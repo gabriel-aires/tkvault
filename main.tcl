@@ -11,9 +11,9 @@ set db_path [file join $home_path $db_name]
 proc hide_input {prompt script} {
     puts -nonewline $prompt
     flush stdout
-    exec stty -echo
+    catch {exec stty -echo}
     uplevel 1 $script
-    exec stty echo
+    catch {exec stty echo}
 }
 
 hide_input "Enter vault password: " {
