@@ -1,6 +1,7 @@
 #!/usr/bin/tclsh8.6
 
 #environment setup
+namespace import ::tcl::mathop::*
 set install_path [file dirname $argv0]
 set home_path $env(HOME)
 set db_name .tkvault
@@ -20,8 +21,33 @@ hide_input "Enter vault password: " {
 }
 
 #fake authentication
-if {$master_pw == "okay"} {
-    puts $master_pw    
-} else {
+if {$master_pw != "okay"} {
     puts denied
+    exit
+} else {
+    puts "\n----------------"
 }
+
+#fake credentials
+dict set credentials email  {test@test.com          jkasdjf9i34}
+dict set credentials bank   {0000-0000-0000-0000    000000}
+dict set credentials work   {admin                  dsaj9f02kjndkf2}
+dict set credentials home   {user                   9dsad3}
+
+proc count_credentials {credentials} {
+    return [dict size $credentials]
+}
+
+proc show_credentials {credentials} {
+    foreach {name credential} $credentials {
+        lassign $credential identity password
+        puts ""
+        puts "Name: $name"
+        puts "Identity: $identity"
+        puts "Password: $password"
+    }
+}
+
+#display stored credentials
+puts "Stored credentials: [count_credentials $credentials]"
+show_credentials $credentials
