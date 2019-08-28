@@ -8,15 +8,19 @@ set db_name .tkvault
 set db_path [file join $home_path $db_name]
 
 #hide password input
-proc hide_input {prompt script} {
-    puts -nonewline $prompt
-    flush stdout
+proc hide_input {script} {
     catch {exec stty -echo}
     uplevel 1 $script
     catch {exec stty echo}
 }
 
-hide_input "Enter vault password: " {
+proc prompt {message} {
+    puts -nonewline "$message "
+    flush stdout
+}
+
+hide_input {
+    prompt "Enter vault password:"
     set master_pw [gets stdin]
 }
 
@@ -46,6 +50,19 @@ proc show_credentials {credentials} {
         puts "Identity: $identity"
         puts "Password: $password"
     }
+}
+
+proc upsert_credential {credentials} {
+    hide_input {
+        prompt "Enter credential name:"
+        set name [gets stdin]
+        prompt "Enter identity:"
+        set id [gets stdin]
+        prompt "Enter password:"
+        set passwd [gets stdin]
+    }
+    
+    dict set credentials $name [list $id $passwd]
 }
 
 #display stored credentials
