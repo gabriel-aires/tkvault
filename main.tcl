@@ -19,10 +19,8 @@ proc prompt {message} {
     flush stdout
 }
 
-hide_input {
-    prompt "Enter vault password:"
-    set master_pw [gets stdin]
-}
+prompt "Enter vault password:"
+hide_input [list gets stdin master_pw]
 
 #fake authentication
 if {$master_pw != "okay"} {
@@ -53,16 +51,19 @@ proc show_credentials {credentials} {
 }
 
 proc upsert_credential {credentials} {
-    hide_input {
-        prompt "Enter credential name:"
-        set name [gets stdin]
-        prompt "Enter identity:"
-        set id [gets stdin]
-        prompt "Enter password:"
-        set passwd [gets stdin]
-    }
-    
+    prompt "Enter credential name:"
+    gets stdin name
+    prompt "Enter identity:"
+    gets stdin id
+    prompt "Enter password:"
+    hide_input [list gets stdin passwd]    
     dict set credentials $name [list $id $passwd]
+}
+
+proc delete_credential {credentials} {
+    prompt "Remove credential:"
+    gets stdin name
+    dict unset credentials $name
 }
 
 #display stored credentials
