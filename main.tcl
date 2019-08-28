@@ -1,6 +1,8 @@
 #!/usr/bin/tclsh8.6
 
 #environment setup
+package require sha1
+namespace import ::sha1::sha1
 namespace import ::tcl::mathop::*
 set install_path [file dirname $argv0]
 set operation [lindex $argv 0]
@@ -47,7 +49,7 @@ proc show_credentials {credentials} {
         puts ""
         puts "Name: $name"
         puts "Identity: $identity"
-        puts "Password: $password"
+        puts "Password: [sha1 $password]"
     }
 }
 
