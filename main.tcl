@@ -3,6 +3,7 @@
 #environment setup
 namespace import ::tcl::mathop::*
 set install_path [file dirname $argv0]
+set operation [lindex $argv 0]
 set home_path $env(HOME)
 set db_name .tkvault
 set db_path [file join $home_path $db_name]
@@ -12,6 +13,7 @@ proc hide_input {script} {
     catch {exec stty -echo}
     uplevel 1 $script
     catch {exec stty echo}
+    puts "\n"
 }
 
 proc prompt {message} {
@@ -26,8 +28,6 @@ hide_input [list gets stdin master_pw]
 if {$master_pw != "okay"} {
     puts denied
     exit
-} else {
-    puts "\n----------------"
 }
 
 #fake credentials
@@ -41,6 +41,7 @@ proc count_credentials {credentials} {
 }
 
 proc show_credentials {credentials} {
+    puts "Stored credentials: [count_credentials $credentials]"
     foreach {name credential} $credentials {
         lassign $credential identity password
         puts ""
@@ -56,16 +57,31 @@ proc upsert_credential {credentials} {
     prompt "Enter identity:"
     gets stdin id
     prompt "Enter password:"
-    hide_input [list gets stdin passwd]    
+    hide_input [list gets stdin passwd]
     dict set credentials $name [list $id $passwd]
+    show_credentials $credentials
 }
 
 proc delete_credential {credentials} {
     prompt "Remove credential:"
     gets stdin name
     dict unset credentials $name
+    show_credentials $credentials
 }
 
-#display stored credentials
-puts "Stored credentials: [count_credentials $credentials]"
-show_credentials $credentials
+switch $operation {
+    insert  -
+    add     -
+    update  -
+    modify  {upsert_credential $credentials}
+    delete  -
+    remove  {delete_credential $credentials}
+    show    -
+    list    -
+    display -
+    inspect {show_credentials $credentials}
+    default {
+        puts "usage: $argv0 <operation>"
+        puts "operations available: insert | update | delete | show"
+    }
+}
