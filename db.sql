@@ -7,3 +7,7 @@ CREATE TABLE IF NOT EXISTS "credential" (
 	"identity"	TEXT,
 	"password"	TEXT
 );
+
+CREATE TABLE IF NOT EXISTS "crypt" (
+	"init_vector"	TEXT NOT NULL
+);
