@@ -6,6 +6,7 @@ package require sqlite3
 namespace import ::tcl::mathop::*
 set install_path [file dirname $argv0]
 set operation [lindex $argv 0]
+set object [lindex $argv 1]
 set home_path $env(HOME)
 set db_name .tkvault
 set db_path [file join $home_path $db_name]
@@ -70,9 +71,7 @@ proc show_credentials {db} {
     }
 }
 
-proc upsert_credential {db} {
-    prompt "Enter credential name:"
-    gets stdin name
+proc upsert_credential {db name} {
     prompt "Enter identity:"
     gets stdin id
     prompt "Enter password:"
@@ -91,16 +90,12 @@ proc upsert_credential {db} {
     show_credentials $db
 }
 
-proc delete_credential {db} {
-    prompt "Remove credential:"
-    gets stdin name
+proc delete_credential {db name} {
     $db eval {DELETE FROM credential WHERE name = $name;}
     show_credentials $db
 }
 
-proc reveal_credential {db} {
-    prompt "Reveal credential:"
-    gets stdin name
+proc reveal_credential {db name} {
     set details [$db eval {
         SELECT identity, password FROM credential WHERE name = $name;
     }]
@@ -119,16 +114,14 @@ switch $operation {
     insert  -
     add     -
     update  -
-    modify  {upsert_credential "db"}
+    modify  {upsert_credential "db" $object}
     delete  -
-    remove  {delete_credential "db"}
-    reveal  {reveal_credential "db"}
-    show    -
+    remove  {delete_credential "db" $object}
+    reveal  {reveal_credential "db" $object}
     list    -
-    display -
     inspect {show_credentials "db"}
     default {
         puts "usage: $argv0 <operation>"
-        puts "operations available: insert | update | delete | reveal | show"
+        puts "operations available: list, insert|update|delete|reveal <item>"
     }
 }
