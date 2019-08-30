@@ -1,12 +1,6 @@
 #!/usr/bin/tclsh8.6
 
 #environment setup
-package require sha1
-package require sqlite3
-package require blowfish
-namespace import ::tcl::mathop::*
-namespace import ::tcl::mathfunc::rand
-namespace import ::tcl::mathfunc::round
 set install_path [file dirname $argv0]
 set operation [lindex $argv 0]
 set object [lindex $argv 1]
@@ -14,97 +8,13 @@ set home_path $env(HOME)
 set db_name .tkvault
 set db_path [file join $home_path $db_name]
 set max_size 256
-
-#safe cryptographic operations using blowfish CBC mode
-oo::class create Crypto {
-	variable Key InitVector Secret DataSize Cache
-	
-	constructor {master_password max_size} {
-		my Next_vector
-		set Secret [binary format A8 $master_password]
-		set DataSize $max_size
-		set Key [::blowfish::Init cbc $Secret $InitVector]
-		set Cache {}
-	}
-
-	method random_string {length} {
-		binary scan " " c initial
-		binary scan "~" c final
-		set range [- $final $initial]
-		set str {}
-	
-		for {set i 0} {$i < $length} {incr i} {
-			set char [+ $initial [round [* [rand] $range]]]
-			append str [binary format c $char]
-		}
-		
-		return $str
-	}
-
-	method get_vector {} {
-		return $InitVector
-	}
-	
-	method import_vector {used_vector} {
-		set InitVector $used_vector
-		my Reset_key
-	}
-	
-	method Next_vector {} {
-		set InitVector [my random_string 8]
-	}
-	
-	method Reset_key {} {
-		::blowfish::Reset $Key $InitVector
-	}
-		
-	method Update_state {} {
-		my Next_vector
-		my Reset_key
-	}
-	
-	method query_cache {index item} {
-		try {
-			set data [dict get $Cache $index $item]
-			return [list true $data]
-		} on error {} {
-			return [list false {}]
-		}
-	}
-	
-	method set_cache {index item data} {
-		dict set Cache $index $item $data
-	}
-	
-	method Update_cache {index plaintext ciphertext} {
-		if {$index != ""} {
-			set encrypt_data [list $ciphertext $InitVector]
-			set decrypt_data [list $plaintext $InitVector]
-			my set_cache $index $plaintext $encrypt_data
-			my set_cache $index $ciphertext $decrypt_data
-		}
-	}	
-	
-	method encrypt {index plaintext} {
-		set ciphertext [::blowfish::Encrypt $Key [binary format A$DataSize $plaintext]]
-		set encrypt_data [list $ciphertext $InitVector]
-		my Update_cache $index $plaintext $ciphertext
-		my Update_state
-		return $encrypt_data
-	}
-	
-	method decrypt {index ciphertext} {
-		set plaintext [::blowfish::Decrypt $Key $ciphertext]
-		set decrypt_data [list $plaintext $InitVector]
-		my Update_cache $index $plaintext $ciphertext
-		my Update_state
-		return $decrypt_data
-	}
-	
-	destructor {
-		::blowfish::Final $Key
-	}
-}
+package require sha1
+package require sqlite3
+package require blowfish
+namespace import ::tcl::mathop::*
+namespace import ::tcl::mathfunc::rand
+namespace import ::tcl::mathfunc::round
+source [file join $install_path crypto.tcl]
 
 #setup database
 set first_access [! [file exists $db_path]]
@@ -170,6 +80,22 @@ proc decrypt_ciphertext {crypto index ciphertext used_vector} {
 	return $plaintext
 }
 
+proc credential_index {db crypto raw_name} {
+	set found false
+	set index {}
+	set records [$db eval {SELECT oid, name, name_key FROM credential;}]
+	foreach {index name used_vector} $records {
+		set testname [encrypt_plaintext $crypto $index $raw_name $used_vector]
+		if {$name == $testname} {
+			$crypto set_cache $index $name [list $raw_name $used_vector]
+			$crypto set_cache $index $raw_name [list $name $used_vector]			
+			set found true
+			break
+		}
+	}
+	return [list $found $index]
+}
+
 proc count_credentials {db} {
     return [$db eval {SELECT COUNT(name) FROM credential;}]
 }
@@ -218,9 +144,22 @@ proc upsert_credential {db crypto raw_name} {
     gets stdin raw_id
     prompt "Enter password:"
     hide_input  [list gets stdin raw_passwd]
+	lassign [credential_index $db $crypto $raw_name] found index
 	
-	set name_key	[$crypto get_vector]
-    set name    	[encrypt_plaintext $crypto {} $raw_name {}]
+	if $found {
+		puts "Updating credential for '$raw_name'..."
+		set encrypt_data [$db eval {
+			SELECT name, name_key
+			FROM credential
+			WHERE oid = $index;
+		}]
+		lassign $encrypt_data name name_key
+	} else {
+		puts "Adding credential for '$raw_name'..."
+		set name_key	[$crypto get_vector]
+		set name    	[encrypt_plaintext $crypto {} $raw_name {}]
+	}
+	
 	set id_key		[$crypto get_vector]
     set id      	[encrypt_plaintext $crypto {} $raw_id {}]
 	set passwd_key	[$crypto get_vector]
@@ -252,21 +191,6 @@ proc upsert_credential {db crypto raw_name} {
     show_credentials $db $crypto
 }
 
-proc credential_index {db crypto raw_name} {
-	set found false
-	set index {}
-	set records [$db eval {SELECT oid, name, name_key FROM credential;}]
-	foreach {index name used_vector} $records {
-		set testname [encrypt_plaintext $crypto $index $raw_name $used_vector]
-		if {$name == $testname} {
-			$crypto set_cache $index $name [list $raw_name $used_vector]
-			$crypto set_cache $index $raw_name [list $name $used_vector]			
-			set found true
-			break
-		}
-	}
-	return [list $found $index]
-}
 
 proc delete_credential {db crypto raw_name} {
 	lassign [credential_index $db $crypto $raw_name] found index
