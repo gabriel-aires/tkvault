@@ -184,7 +184,7 @@ proc output_credential {crypto credential args} {
 	set raw_data {}
 	foreach {type ciphertext used_vector} $items {
 		set plaintext [decrypt_ciphertext $crypto $index $ciphertext $used_vector]
-		dict set raw_data $type $plaintext
+		dict set raw_data $type [string trimright $plaintext]
 	}
     set raw_passwd [dict get $raw_data passwd]
 	set passwd_digest [::sha1::sha1 $raw_passwd]
