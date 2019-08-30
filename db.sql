@@ -3,11 +3,10 @@ CREATE TABLE IF NOT EXISTS "login" (
 );
 
 CREATE TABLE IF NOT EXISTS "credential" (
-	"name"	    TEXT NOT NULL UNIQUE,
-	"identity"	TEXT,
-	"password"	TEXT
-);
-
-CREATE TABLE IF NOT EXISTS "crypt" (
-	"init_vector"	TEXT NOT NULL
+	"name"	        TEXT NOT NULL UNIQUE,
+    "name_key"      TEXT,
+	"identity"	    TEXT,
+    "identity_key"  TEXT,    
+	"password"	    TEXT,
+    "password_key"  TEXT
 );
