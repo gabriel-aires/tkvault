@@ -116,32 +116,38 @@ oo::class create Vault {
         if $found {
             puts "Updating credential for '$raw_name'..."
             set encrypt_data [$Db eval {
-                SELECT name, name_key
+                SELECT name, name_key, name_time
                 FROM credential
                 WHERE oid = $index;
             }]
-            lassign $encrypt_data name name_key
+            lassign $encrypt_data name name_key name_time
         } else {
             puts "Adding credential for '$raw_name'..."
             set name_key	[$Crypto get_vector]
             set name    	[$Crypto get_ciphertext {} $raw_name {}]
+            set name_time   [clock milliseconds]
         }
         
         set id_key		[$Crypto get_vector]
         set id      	[$Crypto get_ciphertext {} $raw_id {}]
+        set id_time     [clock milliseconds]
         set passwd_key	[$Crypto get_vector]
         set passwd  	[$Crypto get_ciphertext {} $raw_passwd {}]
+        set passwd_time [clock milliseconds]
         
         $Db eval {
             INSERT INTO credential
-                VALUES($name, $name_key, $id, $id_key, $passwd, $passwd_key)
+                VALUES($name, $name_key, $name_time, $id, $id_key, $id_time, $passwd, $passwd_key, $passwd_time)
             ON CONFLICT(name)
             DO UPDATE SET
                 name_key 		= excluded.name_key,
+                name_time       = excluded.name_time,
                 identity 		= excluded.identity,
                 identity_key 	= excluded.identity_key,
+                identity_time   = excluded.identity_time,
                 password 		= excluded.password,
-                password_key	= excluded.password_key
+                password_key	= excluded.password_key,
+                password_time   = excluded.password_time
             WHERE name = excluded.name;
         }
         

@@ -3,10 +3,13 @@ CREATE TABLE IF NOT EXISTS "login" (
 );
 
 CREATE TABLE IF NOT EXISTS "credential" (
-	"name"	        TEXT NOT NULL UNIQUE,
+    "name"	        TEXT NOT NULL UNIQUE,
     "name_key"      TEXT,
-	"identity"	    TEXT,
-    "identity_key"  TEXT,    
-	"password"	    TEXT,
-    "password_key"  TEXT
+    "name_time"     INTEGER,
+    "identity"	    TEXT,
+    "identity_key"  TEXT,
+    "identity_time" INTEGER,    
+    "password"	    TEXT,
+    "password_key"  TEXT,
+    "password_time" INTEGER
 );
