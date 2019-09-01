@@ -56,19 +56,19 @@ oo::class create Crypto {
 	}
 	
 	method set_cache {index item data} {
-		dict set Cache $index $item $data
+		if {$index != ""} {
+			dict set Cache $index $item $data
+		}
 	}
 	
 	method Update_cache {index plaintext ciphertext} {
-		if {$index != ""} {
-			set encrypt_data [list $ciphertext $InitVector]
-			set decrypt_data [list $plaintext $InitVector]
-			my set_cache $index $plaintext $encrypt_data
-			my set_cache $index $ciphertext $decrypt_data
-		}
+		set encrypt_data [list $ciphertext $InitVector]
+		set decrypt_data [list $plaintext $InitVector]
+		my set_cache $index $plaintext $encrypt_data
+		my set_cache $index $ciphertext $decrypt_data
 	}	
 	
-	method encrypt {index plaintext} {
+	method Encrypt {index plaintext} {
 		set ciphertext [::blowfish::Encrypt $Key [binary format A$DataSize $plaintext]]
 		set encrypt_data [list $ciphertext $InitVector]
 		my Update_cache $index $plaintext $ciphertext
@@ -76,12 +76,34 @@ oo::class create Crypto {
 		return $encrypt_data
 	}
 	
-	method decrypt {index ciphertext} {
+	method Decrypt {index ciphertext} {
 		set plaintext [::blowfish::Decrypt $Key $ciphertext]
 		set decrypt_data [list $plaintext $InitVector]
 		my Update_cache $index $plaintext $ciphertext
 		my Update_state
 		return $decrypt_data
+	}
+
+	method get_ciphertext {index plaintext used_vector} {
+		lassign [my query_cache $index $plaintext] cache_found encrypt_data
+		if [! $cache_found] {
+			if {$used_vector != ""} {
+				my import_vector $used_vector	
+			}
+			set encrypt_data [my Encrypt $index $plaintext]
+		}
+		set ciphertext [lindex $encrypt_data 0]
+		return $ciphertext
+	}
+	
+	method get_plaintext {index ciphertext used_vector} {
+		lassign [my query_cache $index $ciphertext] cache_found decrypt_data
+		if [! $cache_found] {
+			my import_vector $used_vector
+			set decrypt_data [my Decrypt $index $ciphertext]
+		}
+		set plaintext [lindex $decrypt_data 0]
+		return $plaintext
 	}
 	
 	destructor {
