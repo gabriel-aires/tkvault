@@ -19,37 +19,27 @@ oo::class create Vault {
     }
      
     #authentication
-    method open {} {
+    method open {state} {
         my prompt "Enter vault password:"
         my hide_input [list gets stdin master_pw]
         set master_sha1 [::sha1::sha1 $master_pw]
+        set success true
     
         if $FirstAccess {
             $Db eval { INSERT INTO login VALUES ($master_sha1); }
-            puts "Vault created at '[clock format [clock seconds]]'."
+            set msg "Vault created at '[clock format [clock seconds]]'."
+            set Crypto [Crypto new $master_pw $DataSize]
         } elseif {$master_sha1 != [$Db eval {SELECT master_sha1 FROM login;}]} {
-            puts "access denied."
-            exit
+            set msg "Access denied."
+            set success false
         }
         
-        set Crypto [Crypto new $master_pw $DataSize]
+        $state set Notice $msg
+        return $success
     }    
-    
-    #hide password input
-    method hide_input {script} {
-        catch {exec stty -echo}
-        uplevel 1 $script
-        catch {exec stty echo}
-        puts "\n"
-    }
-    
-    method prompt {message} {
-        puts -nonewline "$message "
-        flush stdout
-    }
-    
+        
     #manage credentials
-    method credential_index {raw_name} {
+    method credential_index {raw_name state} {
         set found false
         set index {}
         set records [$Db eval {SELECT oid, name, name_key FROM credential;}]
@@ -67,7 +57,7 @@ oo::class create Vault {
         return [$Db eval {SELECT COUNT(name) FROM credential;}]
     }
     
-    method output_credential {credential args} {
+    method output_credential {credential state args} {
         lassign $credential index name name_key id id_key passwd passwd_key
         set items [list \
             "name" $name $name_key \
@@ -82,13 +72,13 @@ oo::class create Vault {
         set raw_passwd [dict get $raw_data passwd]
         set passwd_digest [::sha1::sha1 $raw_passwd]
         set mask_flag [in $args "-mask"]
-        puts ""
-        puts "Name: [dict get $raw_data name]"
-        puts "Identity: [dict get $raw_data id]"
-        puts "Password: [expr {$mask_flag ? $passwd_digest : $raw_passwd}]"
+        set name_out [dict get $raw_data name]
+        set id_out [dict get $raw_data id]
+        set passwd_out [expr {$mask_flag ? $passwd_digest : $raw_passwd}]
+        $state append $name_out $id_out $passwd_out
     }
     
-    method show_credentials {} {
+    method show_credentials {state} {
         set credentials [$Db eval {
             SELECT oid
                 , name
@@ -99,14 +89,13 @@ oo::class create Vault {
                 , password_key
             FROM credential;
         }]
-        puts "Stored credentials: [my count_credentials]"
         foreach {index name name_key id id_key passwd passwd_key} $credentials {
             set credential [list $index $name $name_key $id $id_key $passwd $passwd_key]
-            my output_credential $credential -mask
+            my output_credential $credential $state -mask
         }
     }
     
-    method upsert_credential {raw_name} {
+    method upsert_credential {raw_name state} {
         my prompt "Enter identity:"
         gets stdin raw_id
         my prompt "Enter password:"
@@ -114,7 +103,7 @@ oo::class create Vault {
         lassign [my credential_index $raw_name] found index
         
         if $found {
-            puts "Updating credential for '$raw_name'..."
+            set msg "Updated credential for '$raw_name'..."
             set encrypt_data [$Db eval {
                 SELECT name, name_key, name_time
                 FROM credential
@@ -122,7 +111,7 @@ oo::class create Vault {
             }]
             lassign $encrypt_data name name_key name_time
         } else {
-            puts "Adding credential for '$raw_name'..."
+            set msg "Added credential for '$raw_name'..."
             set name_key	[$Crypto get_vector]
             set name    	[$Crypto get_ciphertext {} $raw_name {}]
             set name_time   [clock milliseconds]
@@ -161,22 +150,24 @@ oo::class create Vault {
             $Crypto set_cache $index $raw_item [list $item $item_key]
         }
     
-        my show_credentials
+        $state set Notice $msg
+        return $found
     }
     
-    method delete_credential {raw_name} {
+    method delete_credential {raw_name state} {
         lassign [my credential_index $raw_name] found index
         if $found {
             $Db eval {DELETE FROM credential WHERE oid = $index;}
-            puts "Removed credential for '$raw_name'."
+            set msg "Removed credential for '$raw_name'."
         } else {
-            puts "No credential assigned to '$raw_name'."
+            set msg "No credential assigned to '$raw_name'."
         }
         
-        my show_credentials
+        $state set Notice $msg
+        return $found
     }
     
-    method reveal_credential {raw_name} {
+    method reveal_credential {raw_name state} {
         lassign [my credential_index $raw_name] found index
         if $found {
             set credential [$Db eval {
@@ -190,10 +181,13 @@ oo::class create Vault {
                 FROM credential
                 WHERE oid = $index;
             }]
-            my output_credential $credential
+            set msg [my output_credential $credential]
         } else {
-            puts "Credential '$raw_name' not found."
+            set msg "Credential '$raw_name' not found."
         }
+        
+        $state set Notice $msg
+        return $found
     }
     
     destructor {
