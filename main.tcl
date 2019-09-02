@@ -2,8 +2,8 @@
 
 #environment setup
 set install_path [file dirname $argv0]
-set operation [lindex $argv 0]
-set object [lindex $argv 1]
+set command [lindex $argv 0]
+set target [lindex $argv 1]
 set home_path $env(HOME)
 set db_name .tkvault
 set db_path [file join $home_path $db_name]
@@ -17,26 +17,10 @@ namespace import ::tcl::mathfunc::rand
 namespace import ::tcl::mathfunc::round
 source [file join $install_path crypto.tcl]
 source [file join $install_path vault.tcl]
+source [file join $install_path state.tcl]
+source [file join $install_path cli.tcl]
+source [file join $install_path controller.tcl]
 
-#vault setup
+#start application
 set vault [Vault new $db_path $db_sql $max_size]
-$vault open
-
-#cli interface
-switch $operation {
-    insert  -
-    add     -
-    update  -
-    modify  {$vault upsert_credential $object}
-    delete  -
-    remove  {$vault delete_credential $object}
-    reveal  {$vault reveal_credential $object}
-    list    -
-    inspect {$vault show_credentials}
-    default {
-        puts "usage: $argv0 <operation>"
-        puts "operations available: list, insert|update|delete|reveal <item>"
-    }
-}
-
-$vault destroy
+set controller [Controller new $command $target $vault]

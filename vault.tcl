@@ -19,9 +19,8 @@ oo::class create Vault {
     }
      
     #authentication
-    method open {state} {
-        my prompt "Enter vault password:"
-        my hide_input [list gets stdin master_pw]
+    method open {master_pw state} {
+
         set master_sha1 [::sha1::sha1 $master_pw]
         set success true
     
@@ -39,7 +38,7 @@ oo::class create Vault {
     }    
         
     #manage credentials
-    method credential_index {raw_name state} {
+    method credential_index {raw_name} {
         set found false
         set index {}
         set records [$Db eval {SELECT oid, name, name_key FROM credential;}]
@@ -75,10 +74,11 @@ oo::class create Vault {
         set name_out [dict get $raw_data name]
         set id_out [dict get $raw_data id]
         set passwd_out [expr {$mask_flag ? $passwd_digest : $raw_passwd}]
-        $state append $name_out $id_out $passwd_out
+        $state append Output $name_out $id_out $passwd_out
     }
     
     method show_credentials {state} {
+        set msg [my count_credentials]
         set credentials [$Db eval {
             SELECT oid
                 , name
@@ -93,15 +93,11 @@ oo::class create Vault {
             set credential [list $index $name $name_key $id $id_key $passwd $passwd_key]
             my output_credential $credential $state -mask
         }
+        $state set Notice $msg
     }
     
-    method upsert_credential {raw_name state} {
-        my prompt "Enter identity:"
-        gets stdin raw_id
-        my prompt "Enter password:"
-        my hide_input  [list gets stdin raw_passwd]
+    method upsert_credential {raw_name raw_id raw_passwd state} {
         lassign [my credential_index $raw_name] found index
-        
         if $found {
             set msg "Updated credential for '$raw_name'..."
             set encrypt_data [$Db eval {

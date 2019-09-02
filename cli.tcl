@@ -22,12 +22,8 @@ oo::class create Cli {
         flush stdout
     }
     
-    method display {} {
-        set output [$State get Output]
+    method info {} {
         set notice [$state get Notice]
-        foreach line $output {
-            puts $line
-        }
         puts $notice
     }
 }
