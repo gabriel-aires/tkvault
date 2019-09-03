@@ -4,6 +4,7 @@ oo::class create Controller {
     constructor {cmd tgt vault} {
         set Vault $vault
         set Mode "cli"
+        set Operation {}
         
         switch $cmd {
             insert  -
@@ -17,7 +18,7 @@ oo::class create Controller {
             inspect {set Operation "show_credentials"}
             help    -
             --help  -
-            -h      {my help}
+            -h      {set Operation "help"}
             default {set Mode "gui"}
         }
         
@@ -27,10 +28,14 @@ oo::class create Controller {
             #load tk gui
         }
         
-        my open_vault
+        if {$Operation == "help"} {
+            my help
+        } else {
+            my open_vault
+        }
     }
     
-    method open_vault {
+    method open_vault {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
             $Ui prompt "Enter vault password:"
@@ -40,10 +45,7 @@ oo::class create Controller {
             if $success {
                 set cmd [lindex $Operation 0]
                 my $cmd
-            } else {
-                [self] destroy
-            }
-            
+            }            
         } else {
             #load tk gui
         }
@@ -59,7 +61,6 @@ oo::class create Controller {
             lappend Operation $raw_id $raw_passwd $state
             $Vault {*}$Operation
             $Ui info
-            [self] destroy
         } else {
             #load tk gui
         }
@@ -71,7 +72,6 @@ oo::class create Controller {
             lappend Operation $state
             $Vault {*}$Operation
             $Ui info
-            [self] destroy
         } else {
             #load tk gui
         }
@@ -83,7 +83,13 @@ oo::class create Controller {
             lappend Operation $state
             $Vault {*}$Operation
             $Ui info
-            [self] destroy
+            set credential [$state get Output]
+            if {$credential != ""} {
+            lassign $credential name id passwd
+                puts "Name: $name"
+                puts "Identity: $id"
+                puts "Password: $passwd"
+            }
         } else {
             #load tk gui
         }
@@ -100,17 +106,15 @@ oo::class create Controller {
                 puts ""
                 puts "Name: $name"
                 puts "Identity: $id"
-                puts "Password: $password_hash"
+                puts "Password: $passwd_hash"
             }
-            [self] destroy
         } else {
             #load tk gui
         }
     }
     
-    method help {
-        puts "usage: $argv0 list|insert|update|delete|reveal <item>"
-        [self] destroy
+    method help {} {
+        puts "options: list|insert|update|delete|reveal <item>"
     }
     
     destructor {

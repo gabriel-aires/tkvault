@@ -1,12 +1,10 @@
 oo::class create State {
+    variable Input Output Notice
     
     constructor {args} {
-        set variables {Output Notice}
-        lappend variables {*}$args
-        variable {*}$variables
-        foreach var $variables {
-            set $var {}
-        }
+        set Input {}
+        set Output {}
+        set Notice {}
     }
     
     method var {name} {
@@ -14,9 +12,7 @@ oo::class create State {
     }
     
     method get {name} {
-        set value {}
-        catch {set value [set $name]}
-        return $value
+        return [set $name]
     }
     
     method clear {name} {

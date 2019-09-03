@@ -14,7 +14,7 @@ oo::class create Cli {
         catch {exec stty -echo}
         uplevel 1 $script
         catch {exec stty echo}
-        puts "\n"
+        puts ""
     }
     
     method prompt {message} {
@@ -23,7 +23,9 @@ oo::class create Cli {
     }
     
     method info {} {
-        set notice [$state get Notice]
-        puts $notice
+        set notice [$State get Notice]
+        if {$notice != ""} {
+            puts $notice            
+        }
     }
 }

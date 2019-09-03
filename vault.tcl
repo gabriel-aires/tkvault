@@ -20,17 +20,20 @@ oo::class create Vault {
      
     #authentication
     method open {master_pw state} {
-
         set master_sha1 [::sha1::sha1 $master_pw]
         set success true
+        set msg {}
     
         if $FirstAccess {
             $Db eval { INSERT INTO login VALUES ($master_sha1); }
             set msg "Vault created at '[clock format [clock seconds]]'."
-            set Crypto [Crypto new $master_pw $DataSize]
         } elseif {$master_sha1 != [$Db eval {SELECT master_sha1 FROM login;}]} {
             set msg "Access denied."
             set success false
+        }
+        
+        if $success {
+            set Crypto [Crypto new $master_pw $DataSize]
         }
         
         $state set Notice $msg
@@ -78,7 +81,7 @@ oo::class create Vault {
     }
     
     method show_credentials {state} {
-        set msg [my count_credentials]
+        set msg "Stored credentials: [my count_credentials]"
         set credentials [$Db eval {
             SELECT oid
                 , name
@@ -165,6 +168,8 @@ oo::class create Vault {
     
     method reveal_credential {raw_name state} {
         lassign [my credential_index $raw_name] found index
+        set msg {}
+        set output {}
         if $found {
             set credential [$Db eval {
                 SELECT oid
@@ -177,17 +182,20 @@ oo::class create Vault {
                 FROM credential
                 WHERE oid = $index;
             }]
-            set msg [my output_credential $credential]
+            set output [my output_credential $credential $state]
         } else {
             set msg "Credential '$raw_name' not found."
         }
         
+        $state set Output $output
         $state set Notice $msg
         return $found
     }
     
     destructor {
-        $Crypto destroy
+        if {$Crypto != ""} {
+            $Crypto destroy    
+        }
         $Db close
     }
 }

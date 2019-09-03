@@ -21,6 +21,9 @@ source [file join $install_path state.tcl]
 source [file join $install_path cli.tcl]
 source [file join $install_path controller.tcl]
 
-#start application
+#run application
 set vault [Vault new $db_path $db_sql $max_size]
 set controller [Controller new $command $target $vault]
+
+#clean up
+$controller destroy
