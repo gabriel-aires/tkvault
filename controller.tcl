@@ -8,9 +8,9 @@ oo::class create Controller {
         
         switch $cmd {
             insert  -
-            add     -
+            add     {set Operation [list add_credential $tgt]}
             update  -
-            modify  {set Operation [list upsert_credential $tgt]}
+            modify  {set Operation [list update_credential $tgt]}
             delete  -
             remove  {set Operation [list delete_credential $tgt]}
             reveal  {set Operation [list reveal_credential $tgt]}
@@ -50,8 +50,16 @@ oo::class create Controller {
             #load tk gui
         }
     }
+   
+    method add_credential {} {
+	my Upsert_credential
+    }
+
+    method update_credential {} {
+	my Upsert_credential
+    }
     
-    method upsert_credential {} {
+    method Upsert_credential {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
             $Ui prompt "Enter identity:"

@@ -98,10 +98,26 @@ oo::class create Vault {
         }
         $state set Notice $msg
     }
-    
-    method upsert_credential {raw_name raw_id raw_passwd state} {
+
+    method add_credential {raw_name raw_id raw_passwd state} {
         lassign [my credential_index $raw_name] found index
-        if $found {
+	if [! $found] {
+            set msg "Added credential for '$raw_name'."
+            set name_key    [$Crypto get_vector]
+            set name        [$Crypto get_ciphertext {} $raw_name {}]
+            set name_time   [clock milliseconds]
+	} else {
+	    set msg "Existing credential found for '$raw_name'. Did you mean 'update'?"
+	}
+	$state set Notice $msg
+	set credential [list $name $name_key $name_time]
+	lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
+	my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+    }
+
+    method update_credential {raw_name raw_id raw_passwd state} {
+        lassign [my credential_index $raw_name] found index
+	if $found {
             set msg "Updated credential for '$raw_name'."
             set encrypt_data [$Db eval {
                 SELECT name, name_key, name_time
@@ -109,31 +125,39 @@ oo::class create Vault {
                 WHERE oid = $index;
             }]
             lassign $encrypt_data name name_key name_time
-        } else {
-            set msg "Added credential for '$raw_name'."
-            set name_key	[$Crypto get_vector]
-            set name    	[$Crypto get_ciphertext {} $raw_name {}]
-            set name_time   [clock milliseconds]
-        }
-        
-        set id_key		[$Crypto get_vector]
+	} else {
+	    set msg "No credential found for '$raw_name'. Did you mean 'add'?"
+	}
+	$state set Notice $msg
+ 	set credential [list $name $name_key $name_time]
+	lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
+	my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+   }
+
+    method Set_credential_details {raw_id raw_passwd} {
+        set id_key	[$Crypto get_vector]
         set id      	[$Crypto get_ciphertext {} $raw_id {}]
         set id_time     [clock milliseconds]
         set passwd_key	[$Crypto get_vector]
         set passwd  	[$Crypto get_ciphertext {} $raw_passwd {}]
         set passwd_time [clock milliseconds]
-        
+	return [list $id $id_key $id_time $passwd $passwd_key $passwd_time]
+    }
+
+    method Upsert_credential {raw_name raw_id raw_passwd credential} {
+        lassign $credential name name_key name_time id id_key id_time passwd passwd_key passwd_time
+
         $Db eval {
             INSERT INTO credential
                 VALUES($name, $name_key, $name_time, $id, $id_key, $id_time, $passwd, $passwd_key, $passwd_time)
             ON CONFLICT(name)
             DO UPDATE SET
-                name_key 		= excluded.name_key,
+                name_key 	= excluded.name_key,
                 name_time       = excluded.name_time,
-                identity 		= excluded.identity,
+                identity 	= excluded.identity,
                 identity_key 	= excluded.identity_key,
                 identity_time   = excluded.identity_time,
-                password 		= excluded.password,
+                password 	= excluded.password,
                 password_key	= excluded.password_key,
                 password_time   = excluded.password_time
             WHERE name = excluded.name;
@@ -148,9 +172,6 @@ oo::class create Vault {
             $Crypto set_cache $index $item [list $raw_item $item_key]
             $Crypto set_cache $index $raw_item [list $item $item_key]
         }
-    
-        $state set Notice $msg
-        return $found
     }
     
     method delete_credential {raw_name state} {
