@@ -1,4 +1,4 @@
-#!/usr/bin/tclsh8.6
+#!/usr/bin/env tclsh8.6
 
 #environment setup
 set install_path [file dirname $argv0]

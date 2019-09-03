@@ -102,7 +102,7 @@ oo::class create Vault {
     method upsert_credential {raw_name raw_id raw_passwd state} {
         lassign [my credential_index $raw_name] found index
         if $found {
-            set msg "Updated credential for '$raw_name'..."
+            set msg "Updated credential for '$raw_name'."
             set encrypt_data [$Db eval {
                 SELECT name, name_key, name_time
                 FROM credential
@@ -110,7 +110,7 @@ oo::class create Vault {
             }]
             lassign $encrypt_data name name_key name_time
         } else {
-            set msg "Added credential for '$raw_name'..."
+            set msg "Added credential for '$raw_name'."
             set name_key	[$Crypto get_vector]
             set name    	[$Crypto get_ciphertext {} $raw_name {}]
             set name_time   [clock milliseconds]
