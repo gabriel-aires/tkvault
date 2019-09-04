@@ -8,14 +8,6 @@ oo::class create Vault {
         set FirstAccess [! [file exists $DbPath]]
         set Crypto {}
         set DataSize $data_size
-        sqlite3 db $DbPath
-
-        if $FirstAccess {
-            set db_schema   [open $DbSql]
-            set db_create   [read $db_schema]
-            close $db_schema
-            db transaction {db eval $db_create}
-        }
     }
 
     #authentication
@@ -23,13 +15,21 @@ oo::class create Vault {
         set master_sha1 [::sha1::sha1 $master_pw]
         set success true
         set msg {}
+        sqlite3 $Db $DbPath
 
         if $FirstAccess {
-            $Db eval { INSERT INTO login VALUES ($master_sha1); }
+            set db_schema   [open $DbSql]
+            set db_create   [read $db_schema]
+            close $db_schema
+            $Db transaction {
+                $Db eval $db_create
+                $Db eval { INSERT INTO login VALUES ($master_sha1); }
+            }            
             set msg "Vault created at '[clock format [clock seconds]]'."
-        } elseif {$master_sha1 != [$Db eval {SELECT master_sha1 FROM login;}]} {
+            
+        } elseif {$master_sha1 != [$Db eval {SELECT master_sha1 FROM login;}]} {            
             set msg "Access denied."
-            set success false
+            set success false            
         }
 
         if $success {
