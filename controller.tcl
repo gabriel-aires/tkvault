@@ -1,127 +1,120 @@
 oo::class create Controller {
-    variable Operation Mode Vault Ui
+    variable Operation Mode Vault Ui Target
 
     constructor {cmd tgt vault} {
+        set Target $tgt
         set Vault $vault
-        set Mode "cli"
+        set Mode "CLI"
         set Operation {}
 
         switch $cmd {
             insert  -
-            add     {set Operation [list add_credential $tgt]}
+            add     {set Operation "add_credential"}
             update  -
-            modify  {set Operation [list update_credential $tgt]}
+            modify  {set Operation "update_credential"}
             delete  -
-            remove  {set Operation [list delete_credential $tgt]}
-            reveal  {set Operation [list reveal_credential $tgt]}
+            remove  {set Operation "delete_credential"}
+            reveal  {set Operation "reveal_credential"}
             list    -
             inspect {set Operation "show_credentials"}
             help    -
             --help  -
             -h      {set Operation "help"}
-            default {set Mode "gui"}
+            default {set Mode "GUI"}
         }
 
-        if {$Mode == "cli"} {
+        if {$Mode == "CLI"} {
             set Ui [Cli new]
         } else {
             #load tk gui
         }
 
         if {$Operation == "help"} {
-            my help
+            my dispatch "help"
         } else {
-            my open_vault
+            my dispatch "open_vault"
         }
     }
 
-    method open_vault {} {
-        if {$Mode == "cli"} {
-            set state [$Ui get_state]
-            $Ui prompt "Enter vault password:"
-            $Ui hide_input [list gets stdin master_pw]
-            set success [$Vault open $master_pw $state]
-            $Ui info
-            if $success {
-                set cmd [lindex $Operation 0]
-                my $cmd
-            }
-        } else {
-            #load tk gui
+    method dispatch {method} {
+        my "${Mode}_${method}"
+    }
+
+    method CLI_open_vault {} {
+        set state [$Ui get_state]
+        $Ui prompt "Enter vault password:"
+        $Ui hide_input [list gets stdin master_pw]
+        set success [$Vault open $master_pw $state]
+        $Ui info
+        if $success {
+            my dispatch $Operation
         }
     }
 
-    method add_credential {} {
-	my Upsert_credential
-    }
-
-    method update_credential {} {
-	my Upsert_credential
-    }
-
-    method Upsert_credential {} {
-        if {$Mode == "cli"} {
-            set state [$Ui get_state]
-            $Ui prompt "Enter identity:"
-            gets stdin raw_id
-            $Ui prompt "Enter password:"
-            $Ui hide_input [list gets stdin raw_passwd]
-            lappend Operation $raw_id $raw_passwd $state
-            $Vault {*}$Operation
-            $Ui info
+    method CLI_add_credential {} {
+        if [! [$Vault credential_exists $Target]] {
+            my CLI_upsert_credential
         } else {
-            #load tk gui
+            puts "A credential already exists for '$Target'. Did you mean 'update'?"
         }
     }
 
-    method delete_credential {} {
-        if {$Mode == "cli"} {
-            set state [$Ui get_state]
-            lappend Operation $state
-            $Vault {*}$Operation
-            $Ui info
+    method CLI_update_credential {} {
+        if [$Vault credential_exists $Target] {
+            my CLI_upsert_credential
         } else {
-            #load tk gui
+            puts "Credential for '$Target' not found. Did you mean 'add'?"
         }
     }
 
-    method reveal_credential {} {
-        if {$Mode == "cli"} {
-            set state [$Ui get_state]
-            lappend Operation $state
-            $Vault {*}$Operation
+    method CLI_upsert_credential {} {
+        $Ui prompt "Enter identity:"
+        gets stdin raw_id
+        $Ui prompt "Enter password:"
+        $Ui hide_input [list gets stdin raw_passwd]
+        $Vault $Operation $Target $raw_id $raw_passwd [$Ui get_state]
+        $Ui info
+    }
+
+    method CLI_delete_credential {} {
+        if [$Vault credential_exists $Target] {
+            $Vault $Operation $Target [$Ui get_state]
             $Ui info
+        } else {
+            puts "Credential for '$Target' not found."
+        }
+    }
+
+    method CLI_reveal_credential {} {
+        if [$Vault credential_exists $Target] {
+            set state [$Ui get_state]
+            $Vault $Operation $Target $state
             set credential [$state get Output]
             if {$credential != ""} {
-            lassign $credential name id passwd
+                lassign $credential name id passwd
                 puts "Name: $name"
                 puts "Identity: $id"
                 puts "Password: $passwd"
             }
         } else {
-            #load tk gui
+            puts "Credential for '$Target' not found."
         }
     }
 
-    method show_credentials {} {
-        if {$Mode == "cli"} {
-            set state [$Ui get_state]
-            lappend Operation $state
-            $Vault {*}$Operation
-            $Ui info
-            set credentials [$state get Output]
-            foreach {name id passwd_hash} $credentials {
-                puts ""
-                puts "Name: $name"
-                puts "Identity: $id"
-                puts "Password: $passwd_hash"
-            }
-        } else {
-            #load tk gui
+    method CLI_show_credentials {} {
+        set state [$Ui get_state]
+        $Vault $Operation $state
+        $Ui info
+        set credentials [$state get Output]
+        foreach {name id passwd_hash} $credentials {
+            puts ""
+            puts "Name: $name"
+            puts "Identity: $id"
+            puts "Password: $passwd_hash"
         }
     }
 
-    method help {} {
+    method CLI_help {} {
         puts "options: list|insert|update|delete|reveal <item>"
     }
 

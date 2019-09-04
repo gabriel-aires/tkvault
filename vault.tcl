@@ -9,7 +9,7 @@ oo::class create Vault {
         set Crypto {}
         set DataSize $data_size
         sqlite3 db $DbPath
-        
+
         if $FirstAccess {
             set db_schema   [open $DbSql]
             set db_create   [read $db_schema]
@@ -17,13 +17,13 @@ oo::class create Vault {
             db transaction {db eval $db_create}
         }
     }
-     
+
     #authentication
     method open {master_pw state} {
         set master_sha1 [::sha1::sha1 $master_pw]
         set success true
         set msg {}
-    
+
         if $FirstAccess {
             $Db eval { INSERT INTO login VALUES ($master_sha1); }
             set msg "Vault created at '[clock format [clock seconds]]'."
@@ -31,34 +31,39 @@ oo::class create Vault {
             set msg "Access denied."
             set success false
         }
-        
+
         if $success {
             set Crypto [Crypto new $master_pw $DataSize]
         }
-        
+
         $state set Notice $msg
         return $success
-    }    
-        
+    }
+
     #manage credentials
     method credential_index {raw_name} {
-        set found false
         set index {}
         set records [$Db eval {SELECT oid, name, name_key FROM credential;}]
-        foreach {index name used_vector} $records {
-            set testname [$Crypto get_ciphertext $index $raw_name $used_vector]
+        foreach {oid name used_vector} $records {
+            set testname [$Crypto get_ciphertext $oid $raw_name $used_vector]
             if {$name == $testname} {
-                set found true
+                set index $oid
                 break
             }
         }
-        return [list $found $index]
+        return $index
     }
-    
+
+    method credential_exists {raw_name} {
+        set index [my credential_index $raw_name]
+        set exists [expr {$index != "" ? true : false}]
+        return $exists
+    }
+
     method count_credentials {} {
         return [$Db eval {SELECT COUNT(name) FROM credential;}]
     }
-    
+
     method output_credential {credential state args} {
         lassign $credential index name name_key id id_key passwd passwd_key
         set items [list \
@@ -79,9 +84,8 @@ oo::class create Vault {
         set passwd_out [expr {$mask_flag ? $passwd_digest : $raw_passwd}]
         $state append Output $name_out $id_out $passwd_out
     }
-    
+
     method show_credentials {state} {
-        set msg "Stored credentials: [my count_credentials]"
         set credentials [$Db eval {
             SELECT oid
                 , name
@@ -96,52 +100,39 @@ oo::class create Vault {
             set credential [list $index $name $name_key $id $id_key $passwd $passwd_key]
             my output_credential $credential $state -mask
         }
-        $state set Notice $msg
+        $state set Notice "Stored credentials: [my count_credentials]"
     }
 
     method add_credential {raw_name raw_id raw_passwd state} {
-        lassign [my credential_index $raw_name] found index
-	if [! $found] {
-            set msg "Added credential for '$raw_name'."
-            set name_key    [$Crypto get_vector]
-            set name        [$Crypto get_ciphertext {} $raw_name {}]
-            set name_time   [clock milliseconds]
-	} else {
-	    set msg "Existing credential found for '$raw_name'. Did you mean 'update'?"
-	}
-	$state set Notice $msg
-	set credential [list $name $name_key $name_time]
-	lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
-	my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+        set name_key   [$Crypto get_vector]
+        set name       [$Crypto get_ciphertext {} $raw_name {}]
+        set name_time  [clock milliseconds]
+        set credential [list $name $name_key $name_time]
+        lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
+        my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+        $state set Notice "Added credential for '$raw_name'."
     }
 
     method update_credential {raw_name raw_id raw_passwd state} {
-        lassign [my credential_index $raw_name] found index
-	if $found {
-            set msg "Updated credential for '$raw_name'."
-            set encrypt_data [$Db eval {
-                SELECT name, name_key, name_time
-                FROM credential
-                WHERE oid = $index;
-            }]
-            lassign $encrypt_data name name_key name_time
-	} else {
-	    set msg "No credential found for '$raw_name'. Did you mean 'add'?"
-	}
-	$state set Notice $msg
- 	set credential [list $name $name_key $name_time]
-	lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
-	my Upsert_credential $raw_name $raw_id $raw_passwd $credential
-   }
+        set index [my credential_index $raw_name]
+        set credential [$Db eval {
+            SELECT name, name_key, name_time
+            FROM credential
+            WHERE oid = $index;
+        }]
+        lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
+        my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+        $state set Notice "Updated credential for '$raw_name'."
+    }
 
     method Set_credential_details {raw_id raw_passwd} {
-        set id_key	[$Crypto get_vector]
-        set id      	[$Crypto get_ciphertext {} $raw_id {}]
+        set id_key      [$Crypto get_vector]
+        set id          [$Crypto get_ciphertext {} $raw_id {}]
         set id_time     [clock milliseconds]
         set passwd_key	[$Crypto get_vector]
         set passwd  	[$Crypto get_ciphertext {} $raw_passwd {}]
         set passwd_time [clock milliseconds]
-	return [list $id $id_key $id_time $passwd $passwd_key $passwd_time]
+        return [list $id $id_key $id_time $passwd $passwd_key $passwd_time]
     }
 
     method Upsert_credential {raw_name raw_id raw_passwd credential} {
@@ -162,7 +153,7 @@ oo::class create Vault {
                 password_time   = excluded.password_time
             WHERE name = excluded.name;
         }
-        
+
         set index [$Db eval {SELECT oid FROM credential WHERE name = $name}]
         foreach {item raw_item item_key} [list \
             $name $raw_name $name_key \
@@ -173,49 +164,32 @@ oo::class create Vault {
             $Crypto set_cache $index $raw_item [list $item $item_key]
         }
     }
-    
+
     method delete_credential {raw_name state} {
-        lassign [my credential_index $raw_name] found index
-        if $found {
-            $Db eval {DELETE FROM credential WHERE oid = $index;}
-            set msg "Removed credential for '$raw_name'."
-        } else {
-            set msg "No credential assigned to '$raw_name'."
-        }
-        
-        $state set Notice $msg
-        return $found
+        set index [my credential_index $raw_name]
+        $Db eval {DELETE FROM credential WHERE oid = $index;}
+        $state set Notice "Removed credential for '$raw_name'."
     }
-    
+
     method reveal_credential {raw_name state} {
-        lassign [my credential_index $raw_name] found index
-        set msg {}
-        set output {}
-        if $found {
-            set credential [$Db eval {
-                SELECT oid
-                    , name
-                    , name_key
-                    , identity
-                    , identity_key
-                    , password
-                    , password_key
-                FROM credential
-                WHERE oid = $index;
-            }]
-            set output [my output_credential $credential $state]
-        } else {
-            set msg "Credential '$raw_name' not found."
-        }
-        
-        $state set Output $output
-        $state set Notice $msg
-        return $found
+        set index [my credential_index $raw_name]
+        set credential [$Db eval {
+            SELECT oid
+                , name
+                , name_key
+                , identity
+                , identity_key
+                , password
+                , password_key
+            FROM credential
+            WHERE oid = $index;
+        }]
+        my output_credential $credential $state
     }
-    
+
     destructor {
         if {$Crypto != ""} {
-            $Crypto destroy    
+            $Crypto destroy
         }
         $Db close
     }
