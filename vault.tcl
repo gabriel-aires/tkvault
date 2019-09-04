@@ -1,8 +1,8 @@
 oo::class create Vault {
-    variable FirstAccess Db DbPath DbSchema Crypto DataSize
+    variable FirstAccess Db DbPath DbSql Crypto DataSize
 
     constructor {db_path db_sql data_size} {
-        set Db "db"
+        set Db {}
         set DbPath $db_path
         set DbSql $db_sql
         set FirstAccess [! [file exists $DbPath]]
@@ -10,11 +10,12 @@ oo::class create Vault {
         set DataSize $data_size
     }
 
-    #authentication
+    #authentication / database setup
     method open {master_pw state} {
         set master_sha1 [::sha1::sha1 $master_pw]
         set success true
         set msg {}
+        set Db "db"
         sqlite3 $Db $DbPath
 
         if $FirstAccess {
@@ -191,6 +192,8 @@ oo::class create Vault {
         if {$Crypto != ""} {
             $Crypto destroy
         }
-        $Db close
+        if {$Db != ""} {
+            $Db close         
+        }
     }
 }
