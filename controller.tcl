@@ -1,11 +1,11 @@
 oo::class create Controller {
     variable Operation Mode Vault Ui
-    
+
     constructor {cmd tgt vault} {
         set Vault $vault
         set Mode "cli"
         set Operation {}
-        
+
         switch $cmd {
             insert  -
             add     {set Operation [list add_credential $tgt]}
@@ -21,20 +21,20 @@ oo::class create Controller {
             -h      {set Operation "help"}
             default {set Mode "gui"}
         }
-        
+
         if {$Mode == "cli"} {
             set Ui [Cli new]
         } else {
             #load tk gui
         }
-        
+
         if {$Operation == "help"} {
             my help
         } else {
             my open_vault
         }
     }
-    
+
     method open_vault {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
@@ -45,12 +45,12 @@ oo::class create Controller {
             if $success {
                 set cmd [lindex $Operation 0]
                 my $cmd
-            }            
+            }
         } else {
             #load tk gui
         }
     }
-   
+
     method add_credential {} {
 	my Upsert_credential
     }
@@ -58,7 +58,7 @@ oo::class create Controller {
     method update_credential {} {
 	my Upsert_credential
     }
-    
+
     method Upsert_credential {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
@@ -73,7 +73,7 @@ oo::class create Controller {
             #load tk gui
         }
     }
-    
+
     method delete_credential {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
@@ -84,7 +84,7 @@ oo::class create Controller {
             #load tk gui
         }
     }
-    
+
     method reveal_credential {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
@@ -102,7 +102,7 @@ oo::class create Controller {
             #load tk gui
         }
     }
-    
+
     method show_credentials {} {
         if {$Mode == "cli"} {
             set state [$Ui get_state]
@@ -120,11 +120,11 @@ oo::class create Controller {
             #load tk gui
         }
     }
-    
+
     method help {} {
         puts "options: list|insert|update|delete|reveal <item>"
     }
-    
+
     destructor {
         $Vault destroy
     }
