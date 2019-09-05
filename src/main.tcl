@@ -38,6 +38,3 @@ source [file join $conf::src_path controller.tcl]
 #run application
 set vault [Vault new $conf::db_path $conf::db_sql $conf::max_size]
 set controller [Controller new $conf::command $conf::target $vault]
-
-#clean up
-$controller destroy
