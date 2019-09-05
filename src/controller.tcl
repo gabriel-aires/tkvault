@@ -24,9 +24,9 @@ oo::class create Controller {
         }
 
         if {$Mode == "CLI"} {
-            set Ui [Cli new $Vault $Operation $Target]
+            set Ui [Cli new $Vault $Operation $Target [self]]
         } else {
-            set Ui [Gui new $Vault $Operation $Target]
+            set Ui [Gui new $Vault $Operation $Target [self]]
         }
 
         if {$Operation == "help"} {

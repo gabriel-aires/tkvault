@@ -1,11 +1,12 @@
 oo::class create Cli {
-    variable State Vault Operation Target
+    variable State Vault Operation Target Controller
     
-    constructor {vault operation target} {
+    constructor {vault operation target controller} {
         set State [State new]
         set Vault $vault
         set Operation $operation
         set Target $target
+        set Controller $controller
     }
     
     method hide_input {script} {
