@@ -11,9 +11,10 @@ oo::class create Gui {
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Theme [expr {$::tcl_platform(os) == "Linux" ? "waldorf" : "default"}]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
         set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
+        font create "icon" -family "Courier" -weight "bold" -size 24
         my update_theme
     }
     
@@ -25,10 +26,11 @@ oo::class create Gui {
         set master_pw [$state get Input]
         set success [$Vault open $master_pw $state]
         if $success {
-            $help configure -foreground #2bdb64
+            $help configure -foreground "blue"
+            $state set Notice "Welcome!"
             after 1000 "destroy $auth_container; $state destroy; [self] main"
         } else {
-            $help configure -foreground #c3063c
+            $help configure -foreground "red"
         }
     }
     
@@ -78,7 +80,7 @@ oo::class create Gui {
         ::ttk::style theme use $Theme
     }
     
-    method main {} {
+    method menubar {} {
         set menubar [::menubar new]
         
         $menubar define {
@@ -106,6 +108,36 @@ oo::class create Gui {
                 quit                {0 Ctrl+Q Control-Key-q}
             }
         }
+    }
+    
+    method side_content {frame} {
+        set state   [State new]
+        set msg     [::ttk::label ${frame}.msg]
+        set count   [::ttk::label ${frame}.count]
+        $state set Output [$Vault count_credentials]
+        $msg configure -text "Stored Credentials: "
+        $count configure -textvariable [$state var Output]
+        grid $msg $count -padx 20p -pady 20p
+    }
+    
+    method accounts_list {frame} {
+        set state   [State new]
+        $Vault show_credentials $state
+        set credentials [$state get Output]
+        foreach {name id _} $credentials {
+            set icon    [::ttk::label ${frame}.icon_$name]
+            set button  [::ttk::label ${frame}.view_$name]
+            set line    [::ttk::separator ${frame}.line_$name -orient horizontal]
+            set capital [string toupper [string index $name 0]]
+            $button configure -text "Name: $name\tIdentity: $id"
+            $icon configure -text " $capital " -background "#57C09A" -foreground white -font "icon"
+            grid $icon - $button -ipady 10 -sticky w
+            grid $line -columnspan 3 -sticky ew
+        }
+    }
+    
+    method main {} {
+        my menubar
 
         set main_state [State new]
         set container [::ttk::frame .main]
@@ -117,20 +149,21 @@ oo::class create Gui {
         set logo [::ttk::label .main.sidebar.top.logo]
         set message [::ttk::label .main.status.message]
         
-        $sidebar configure -width 300
         $status configure -relief groove
         $logo configure -image $Logo
         $message configure -textvariable [$main_state var Notice]
         
         pack $container -expand 1 -fill both
-        pack $sidebar -side left
-        pack $side_top -side top
-        pack $side_content
-        pack $accounts -expand 1
         pack $status -side bottom -fill x
-        pack $logo -padx 4p -pady 4p
+        pack $sidebar -side left -anchor n
+        pack $side_top -side top -anchor n
+        pack $side_content -side top -anchor n
+        pack $accounts -expand 1 -fill both -pady 10p
+        pack $logo -padx 20p -pady 10p -side top -anchor n
         pack $message -padx 4p -pady 4p
         
+        my side_content $side_content
+        my accounts_list $accounts
         $Root maximize
     }
     

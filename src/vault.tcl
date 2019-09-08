@@ -14,7 +14,7 @@ oo::class create Vault {
     method open {master_pw state} {
         set master_sha1 [::sha1::sha1 $master_pw]
         set success true
-        set msg "Welcome back!"
+        set msg {}
         set Db "db"
         sqlite3 $Db $DbPath
 

@@ -9,10 +9,24 @@ oo::class create Cli {
         set Controller $controller
     }
     
-    method hide_input {script} {
+    method Hide_input_windows {script} {
+        set previous_state [twapi::modify_console_input_mode stdin -echoinput false -lineinput true]
+        uplevel 2 $script
+        twapi::set_console_input_mode stdin {*}$previous_state
+    }
+    
+    method Hide_input_unix {script} {
         catch {exec stty -echo}
-        uplevel 1 $script
+        uplevel 2 $script
         catch {exec stty echo}
+    }
+    
+    method hide_input {script} {
+        if {$::tcl_platform(platform) == "windows"} {
+            my Hide_input_windows $script
+        } else {
+            my Hide_input_unix $script
+        }
         puts ""
     }
     
