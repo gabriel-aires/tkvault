@@ -6,7 +6,6 @@ oo::class create SFrame {
     constructor {path} {
         
         set bg [::ttk::style lookup TFrame -background]
-        set Parent [join [lrange [split $path .] 0 end-1] .]
         set Root [::ttk::frame $path]
         set Window [winfo toplevel $Root]
         set Canvas [canvas ${Root}.canvas -bg $bg -bd 0 -highlightthickness 0 -yscrollcommand [list ${Root}.scroll set]]
@@ -24,6 +23,9 @@ oo::class create SFrame {
         
         # Auto adjusts when the sframe is resized or the contents change size.
         bind $Canvas <Expose> [list [self] resize]
+        
+        # MouseWheel bindings
+        bind [winfo toplevel $Root] <MouseWheel> [list [self] scroll %W %D]
     }
 
     method root {} {
@@ -56,6 +58,12 @@ oo::class create SFrame {
             grid $ScrollBar -row 0 -column 1 -sticky ns
         } else {
             grid forget $ScrollBar
+        }
+    }
+    
+    method scroll {window delta} {
+        if [string match ${Root}\.* $window] {
+            $Canvas yview scroll [expr {-$delta/120}] units
         }
     }
 }
