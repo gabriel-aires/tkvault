@@ -108,21 +108,87 @@ oo::class create Vault {
         set name_key   [$Crypto get_vector]
         set name       [$Crypto get_ciphertext {} $raw_name {}]
         set name_time  [clock milliseconds]
-        set credential [list $name $name_key $name_time]
-        lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
-        my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+        
+        lassign [my Set_credential_details $raw_id $raw_passwd] \
+            id \
+            id_key \
+            id_time \
+            passwd \
+            passwd_key \
+            passwd_time
+        
+        $Db eval {
+            INSERT INTO credential
+            VALUES(
+                $name
+                , $name_key
+                , $name_time
+                , $id
+                , $id_key
+                , $id_time
+                , $passwd
+                , $passwd_key
+                , $passwd_time
+            )
+        }
+        
+        my Update_cache $raw_name $raw_id $raw_passwd [list \
+            $name \
+            $name_key \
+            $name_time \
+            $id \
+            $id_key \
+            $id_time \
+            $passwd \
+            $passwd_key \
+            $passwd_time \
+        ]
+        
         $state set Notice "Added credential for '$raw_name'."
     }
 
     method update_credential {raw_name raw_id raw_passwd state} {
         set index [my credential_index $raw_name]
-        set credential [$Db eval {
+        lassign [$Db eval {
             SELECT name, name_key, name_time
             FROM credential
             WHERE oid = $index;
-        }]
-        lappend credential {*}[my Set_credential_details $raw_id $raw_passwd]
-        my Upsert_credential $raw_name $raw_id $raw_passwd $credential
+        }] name name_key name_time
+        
+        lassign [my Set_credential_details $raw_id $raw_passwd] \
+            id \
+            id_key \
+            id_time \
+            passwd \
+            passwd_key \
+            passwd_time
+        
+        $Db eval {
+            UPDATE credential
+            SET
+                name_key = $name_key
+                , name_time = $name_time
+                , identity = $id
+                , identity_key = $id_key
+                , identity_time = $id_time
+                , password = $passwd
+                , password_key = $passwd_key
+                , password_time = $passwd_time
+            WHERE NAME = $name;
+        }
+        
+        my Update_cache $raw_name $raw_id $raw_passwd [list \
+            $name \
+            $name_key \
+            $name_time \
+            $id \
+            $id_key \
+            $id_time \
+            $passwd \
+            $passwd_key \
+            $passwd_time \
+        ]
+        
         $state set Notice "Updated credential for '$raw_name'."
     }
 
@@ -136,26 +202,20 @@ oo::class create Vault {
         return [list $id $id_key $id_time $passwd $passwd_key $passwd_time]
     }
 
-    method Upsert_credential {raw_name raw_id raw_passwd credential} {
-        lassign $credential name name_key name_time id id_key id_time passwd passwd_key passwd_time
-
-        $Db eval {
-            INSERT INTO credential
-                VALUES($name, $name_key, $name_time, $id, $id_key, $id_time, $passwd, $passwd_key, $passwd_time)
-            ON CONFLICT(name)
-            DO UPDATE SET
-                name_key 	= excluded.name_key,
-                name_time       = excluded.name_time,
-                identity 	= excluded.identity,
-                identity_key 	= excluded.identity_key,
-                identity_time   = excluded.identity_time,
-                password 	= excluded.password,
-                password_key	= excluded.password_key,
-                password_time   = excluded.password_time
-            WHERE name = excluded.name;
-        }
+    method Update_cache {raw_name raw_id raw_passwd credential} {
+        lassign $credential \
+            name \
+            name_key \
+            name_time \
+            id \
+            id_key \
+            id_time \
+            passwd \
+            passwd_key \
+            passwd_time
 
         set index [$Db eval {SELECT oid FROM credential WHERE name = $name}]
+        
         foreach {item raw_item item_key} [list \
             $name $raw_name $name_key \
             $id $raw_id $id_key \

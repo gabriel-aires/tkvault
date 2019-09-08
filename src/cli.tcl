@@ -55,7 +55,7 @@ oo::class create Cli {
 
     method add_credential {} {
         if [! [$Vault credential_exists $Target]] {
-            my upsert_credential
+            my set_credential
         } else {
             puts "A credential already exists for '$Target'. Did you mean 'update'?"
         }
@@ -63,13 +63,13 @@ oo::class create Cli {
 
     method update_credential {} {
         if [$Vault credential_exists $Target] {
-            my upsert_credential
+            my set_credential
         } else {
             puts "Credential for '$Target' not found. Did you mean 'add'?"
         }
     }
 
-    method upsert_credential {} {
+    method set_credential {} {
         my prompt "Enter identity:"
         gets stdin raw_id
         my prompt "Enter password:"
