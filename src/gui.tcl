@@ -12,6 +12,7 @@ oo::class create Gui {
         set Target $target
         set Controller $controller
         set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
+        set ScrolledFrame {}
         set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
         font create "icon" -family "Courier" -weight "bold" -size 24
@@ -120,20 +121,24 @@ oo::class create Gui {
         grid $msg $count -padx 20p -pady 20p
     }
     
-    method accounts_list {frame} {
+    method accounts_list {parent_frame} {
         set state   [State new]
         $Vault show_credentials $state
         set credentials [$state get Output]
+        set sframe [SFrame new ${parent_frame}.sframe]
+        set root [$sframe root]
+        set content [$sframe content]
+        
         foreach {name id _} $credentials {
-            set icon    [::ttk::label ${frame}.icon_$name]
-            set button  [::ttk::label ${frame}.view_$name]
-            set line    [::ttk::separator ${frame}.line_$name -orient horizontal]
+            set icon    [::ttk::label ${content}.icon_$name]
+            set button  [::ttk::label ${content}.view_$name]
             set capital [string toupper [string index $name 0]]
             $button configure -text "Name: $name\tIdentity: $id"
             $icon configure -text " $capital " -background "#57C09A" -foreground white -font "icon"
             grid $icon - $button -ipady 10 -sticky w
-            grid $line -columnspan 3 -sticky ew
         }
+        
+        pack $root -expand 1 -fill y -anchor nw
     }
     
     method main {} {
