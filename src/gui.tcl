@@ -11,11 +11,11 @@ oo::class create Gui {
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "clam" : "vista"}]
         set ScrolledFrame {}
         set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
-        font create "icon" -family "Courier" -weight "bold" -size 24
+        font create "mono" -family "Courier" -weight "bold" -size 24
         my update_theme
     }
     
@@ -130,12 +130,11 @@ oo::class create Gui {
         set content [$sframe content]
         
         foreach {name id _} $credentials {
-            set icon    [::ttk::label ${content}.icon_$name]
-            set button  [::ttk::label ${content}.view_$name]
-            set capital [string toupper [string index $name 0]]
-            $button configure -text "Name: $name\tIdentity: $id"
-            $icon configure -text " $capital " -background "#57C09A" -foreground white -font "icon"
-            grid $icon - $button -ipady 10 -sticky w
+            set cframe [CFrame new ${content}.button_$name "#57C09A" "white" {puts click}]
+            set button [$cframe container]
+            set label  [$cframe label]
+            $label configure -text "$name: $id" -font "mono"
+            grid $button -sticky nsew
         }
         
         pack $root -expand 1 -fill y -anchor nw

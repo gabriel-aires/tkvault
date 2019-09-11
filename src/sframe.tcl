@@ -1,13 +1,12 @@
 # Adapted from Paul Walton's implementation at https://wiki.tcl-lang.org/page/A+scrolled+frame
 
 oo::class create SFrame {
-    variable Root Window Canvas Container Content ScrollBar
+    variable Root Canvas Container Content ScrollBar
 
     constructor {path} {
         
         set bg [::ttk::style lookup TFrame -background]
         set Root [::ttk::frame $path]
-        set Window [winfo toplevel $Root]
         set Canvas [canvas ${Root}.canvas -bg $bg -bd 0 -highlightthickness 0 -yscrollcommand [list ${Root}.scroll set]]
         set ScrollBar [::ttk::scrollbar ${Root}.scroll -orient vertical -command [list $Canvas yview]]
         set Container [::ttk::frame ${Canvas}.container]
