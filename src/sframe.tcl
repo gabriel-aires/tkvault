@@ -34,21 +34,14 @@ oo::class create SFrame {
     }
 
     method resize {} {
-        set width  [winfo width $Canvas]
-        set height [winfo height $Canvas]
+        set width  [winfo reqwidth $Content]
+        set height [winfo reqheight $Content]
         
-        # Use requested width/height of the content frame, if greater
-        if { [winfo reqwidth $Content] > $width } {
-            set width [winfo reqwidth $Content]
-        }
-        if { [winfo reqheight $Content] > $height } {
-            set height [winfo reqheight $Content]
-        }
-        
+        # Setup container size according to contents
         $Container configure -width $width -height $height
 
         # Match scroll region to the height and width of the container
-        $Canvas configure -scrollregion [list 0 0 $width $height]
+        $Canvas configure -scrollregion [list 0 0 $width $height] -width $width
 
         # Show the scrollbar as necessary
         if { [winfo reqheight $Content] > [winfo height $Canvas] } {
