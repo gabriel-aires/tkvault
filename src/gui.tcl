@@ -3,19 +3,16 @@ oo::class create Gui {
     
     constructor {vault operation target controller} {
         package require Tk
-        package require ttk::theme::Arc
-        package require ttk::theme::black
-        package require ttk::theme::waldorf
         package require menubar
         set Vault $vault
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "Arc" : "vista"}]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "clam" : "vista"}]
         set ScrolledFrame {}
         set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
-        font create "mono" -family "Courier" -weight "bold" -size 24
+        font create "mono" -family "Courier" -weight "bold" -size 21
         my update_theme
     }
     
@@ -57,7 +54,7 @@ oo::class create Gui {
         my bind_method $input <Key-Return> "check_passwd $state $container $help"
         
         pack $container -expand 1 -fill both -pady 2p -padx 2p
-        grid $left $right -sticky ew -pady 4p -ipady 4p -padx 4p -ipadx 4p
+        pack $left $right -side left -fill both -expand 1 -pady 4p -ipady 4p -padx 4p -ipadx 4p
         pack $logo
         pack $prompt -pady 3p
         pack $input -pady 3p
@@ -88,13 +85,6 @@ oo::class create Gui {
             File M:file {
                 Quit        C       quit
             }
-            View M:view {
-                Theme       S       separator1
-                default     R       theme_selector
-                Arc         R       theme_selector
-                black       R       theme_selector
-                waldorf     R       theme_selector
-            }
             Help M:help {
                 About       C       about
             }
@@ -103,7 +93,6 @@ oo::class create Gui {
         $menubar install "." {
             $menubar menu.configure -command [list \
                 quit                "[self] quit" \
-                theme_selector      "[self] set_theme" \
                 about               "[self] about" \
             ] -bind {
                 quit                {0 Ctrl+Q Control-Key-q}
@@ -118,27 +107,37 @@ oo::class create Gui {
         $state set Output [$Vault count_credentials]
         $msg configure -text "Stored Credentials: "
         $count configure -textvariable [$state var Output]
-        grid $msg $count -padx 20p -pady 20p
+        pack $msg $count -side left -padx 20p -pady 20p
     }
     
     method accounts_list {parent_frame} {
         set state   [State new]
         $Vault show_credentials $state
-        set credentials [$state get Output]
+        set raw_credentials [$state get Output]
         set sframe [SFrame new ${parent_frame}.sframe]
         set root [$sframe root]
         set content [$sframe content]
+        set credentials {}
         
-        foreach {name id _} $credentials {
+        foreach {name id _} $raw_credentials {
+            dict set credentials $name $id
+        }
+        
+        foreach name [lsort [dict keys $credentials]] {
+            set id      [dict get $credentials $name]
             set cframe  [CFrame new ${content}.button_$name {puts click}]
             set button  [$cframe root]
-            set icon    [$cframe add_label [$cframe content].icon gray 100 cyan 4]
-            set label   [$cframe add_label [$cframe content].label cyan 4 honeydew 2]
+            set left    [$cframe add_label [$cframe content].icon brown 4 gray 100 ]
+            set right   [::ttk::frame [$cframe content].info]
+            set top     [$cframe add_label ${right}.name brown 4 gray 100 ]
+            set bottom  [$cframe add_label ${right}.id gray 100 brown 4 ]
             set capital [string toupper [string index $name 0]]
-            $icon configure -text " $capital " -font "mono"
-            $label configure -text " $name: $id "
-            pack $icon -side left -fill y
-            pack $label -side left -fill both -expand 1
+            $left configure -text " $capital " -font "mono"
+            $top configure -text " Name: $name " -anchor nw
+            $bottom configure -text " Identity: $id "
+            pack $left -side left -fill both
+            pack $right -side left -fill both -expand 1
+            pack $top $bottom -side top -fill both -expand 1 -anchor nw
             pack $button -fill both -expand 1
         }
         
