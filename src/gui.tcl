@@ -125,12 +125,12 @@ oo::class create Gui {
         
         foreach name [lsort [dict keys $credentials]] {
             set id      [dict get $credentials $name]
-            set cframe  [CFrame new ${content}.button_$name {puts click}]
+            set cframe  [CFrame new ${content}.button_$name {puts click} 1]
             set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon brown 4 gray 100 ]
+            set left    [$cframe add_label [$cframe content].icon gray 30 azure 3]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name brown 4 gray 100 ]
-            set bottom  [$cframe add_label ${right}.id gray 100 brown 4 ]
+            set top     [$cframe add_label ${right}.name gray 30 azure 3]
+            set bottom  [$cframe add_label ${right}.id gray 100 gray 40]
             set capital [string toupper [string index $name 0]]
             $left configure -text " $capital " -font "mono"
             $top configure -text " Name: $name " -anchor nw

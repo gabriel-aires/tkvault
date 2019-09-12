@@ -1,22 +1,23 @@
 # Clickabe Frame
 
 oo::class create CFrame {
-    variable Root Content Frame Labels Command ResetColor HoverColor PressColor
+    variable Root Content Frame Padding Labels Command ResetColor HoverColor PressColor
     mixin Colors
 
-    constructor {path cmd} {
+    constructor {path cmd padding} {
         set ResetColor 0
         set HoverColor 3
         set PressColor 1
+        set Padding $padding
         set Labels {}
         set Command $cmd
-        set Root [::ttk::frame $path -relief raised]
+        set Root [::ttk::frame $path -relief flat]
         set Content [::ttk::frame ${Root}.content]
         my bind_method $Root <Enter> colorize_labels $HoverColor
         my bind_method $Root <Leave> colorize_labels $ResetColor
         my bind_method $Root <ButtonPress-1> press $PressColor
         my bind_method $Root <ButtonRelease-1> release $HoverColor
-        pack $Content -padx 2p -pady 2p -fill both -expand 1
+        pack $Content -padx ${Padding}p -pady ${Padding}p -fill both -expand 1
     }
 
     method root {} {
@@ -65,7 +66,7 @@ oo::class create CFrame {
     }
     
     method release {multiplier} {
-        $Root configure -relief raised
+        $Root configure -relief flat
         my colorize_labels $multiplier
         {*}$Command
     }
