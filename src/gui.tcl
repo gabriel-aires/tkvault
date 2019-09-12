@@ -11,7 +11,7 @@ oo::class create Gui {
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "clam" : "vista"}]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "Arc" : "vista"}]
         set ScrolledFrame {}
         set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
@@ -132,7 +132,7 @@ oo::class create Gui {
         foreach {name id _} $credentials {
             set cframe  [CFrame new ${content}.button_$name {puts click}]
             set button  [$cframe root]
-            set icon    [$cframe add_label [$cframe content].icon gray 10 gray 90]
+            set icon    [$cframe add_label [$cframe content].icon gray 100 cyan 4]
             set label   [$cframe add_label [$cframe content].label cyan 4 honeydew 2]
             set capital [string toupper [string index $name 0]]
             $icon configure -text " $capital " -font "mono"

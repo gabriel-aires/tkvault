@@ -25,6 +25,7 @@ oo::class create Window {
 		focus $Path
 		wm deiconify $Path
 		wm attributes $Path -topmost 1
+		my unfocus
 	}
 
 	method unfocus {} {

@@ -1,18 +1,21 @@
 # Clickabe Frame
 
 oo::class create CFrame {
-    variable Root Content Frame Labels Command
+    variable Root Content Frame Labels Command ResetColor HoverColor PressColor
     mixin Colors
 
     constructor {path cmd} {
+        set ResetColor 0
+        set HoverColor 3
+        set PressColor 1
         set Labels {}
         set Command $cmd
         set Root [::ttk::frame $path -relief raised]
         set Content [::ttk::frame ${Root}.content]
-        my bind_method $Root <Enter> hover_in
-        my bind_method $Root <Leave> hover_out
-        my bind_method $Root <ButtonPress-1> press
-        my bind_method $Root <ButtonRelease-1> release
+        my bind_method $Root <Enter> colorize_labels $HoverColor
+        my bind_method $Root <Leave> colorize_labels $ResetColor
+        my bind_method $Root <ButtonPress-1> press $PressColor
+        my bind_method $Root <ButtonRelease-1> release $HoverColor
         pack $Content -padx 2p -pady 2p -fill both -expand 1
     }
 
@@ -29,49 +32,46 @@ oo::class create CFrame {
         my check_color $fgcolor $fgnum
         lappend Labels $path $bgcolor $bgnum $fgcolor $fgnum
         ::ttk::label $path -background "$bgcolor$bgnum" -foreground "$fgcolor$fgnum"
-        my bind_method $path <ButtonPress-1> press
-        my bind_method $path <ButtonRelease-1> release
+        my bind_method $path <ButtonPress-1> press $PressColor
+        my bind_method $path <ButtonRelease-1> release $HoverColor
         return $path
     }    
 
-    method hover_color {name index} {
+    method change_color {name index multiplier} {
         lassign [my palette_range] color_min color_max
         lassign [my gray_range] gray_min gray_max
         set isgray [in $name [my gray_scale]]
-        set delta [expr {$isgray ? 20 : 2}]
+        set gray_delta [* 10 $multiplier]
+        set color_delta $multiplier
+        set delta [expr {$isgray ? $gray_delta : $color_delta}]
         set max [expr {$isgray ? $gray_max : $color_max}]
         set min [expr {$isgray ? $gray_min : $color_min}]
-        set range [- $max $min]
-        set offset [- [+ $index $delta] $min]
-        set new_index [+ [% $offset $range] $min]
+        set range [+ [- $max $min] 1]
+        set index [- $index $min]
+        set new_index [+ [% [+ [% $delta $range] $index] $range] $min]
         return "$name$new_index"
     }
     
-    method hover_in {} {
+    method colorize_labels {multiplier} {
         foreach {label bgcolor bgnum fgcolor fgnum} $Labels {
-            $label configure -background [my hover_color $bgcolor $bgnum]
-            $label configure -foreground [my hover_color $fgcolor $fgnum]    
+            $label configure -background [my change_color $bgcolor $bgnum $multiplier]
+            $label configure -foreground [my change_color $fgcolor $fgnum $multiplier]    
         }
     }
     
-    method hover_out {} {
-        foreach {label bgcolor bgnum fgcolor fgnum} $Labels {
-            $label configure -background "$bgcolor$bgnum"
-            $label configure -foreground "$fgcolor$fgnum"
-        }
-    }
-    
-    method press {} {
+    method press {multiplier} {
         $Root configure -relief sunken
+        my colorize_labels $multiplier
     }
     
-    method release {} {
+    method release {multiplier} {
         $Root configure -relief raised
+        my colorize_labels $multiplier
         {*}$Command
     }
     
-    method bind_method {origin event method} {
-        bind $origin $event "[self] $method"
+    method bind_method {origin event method args} {
+        bind $origin $event "[self] $method $args"
     }
     
     destructor {
