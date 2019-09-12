@@ -130,14 +130,19 @@ oo::class create Gui {
         set content [$sframe content]
         
         foreach {name id _} $credentials {
-            set cframe [CFrame new ${content}.button_$name "#57C09A" "white" {puts click}]
-            set button [$cframe container]
-            set label  [$cframe label]
-            $label configure -text "$name: $id" -font "mono"
-            grid $button -sticky nsew
+            set cframe  [CFrame new ${content}.button_$name {puts click}]
+            set button  [$cframe root]
+            set icon    [$cframe add_label [$cframe content].icon gray 10 gray 90]
+            set label   [$cframe add_label [$cframe content].label cyan 4 honeydew 2]
+            set capital [string toupper [string index $name 0]]
+            $icon configure -text " $capital " -font "mono"
+            $label configure -text " $name: $id "
+            pack $icon -side left -fill y
+            pack $label -side left -fill both -expand 1
+            pack $button -fill both -expand 1
         }
         
-        pack $root -expand 1 -fill y -anchor nw
+        pack $root -side left -fill y -anchor nw
     }
     
     method main {} {
@@ -162,7 +167,7 @@ oo::class create Gui {
         pack $sidebar -side left -anchor n
         pack $side_top -side top -anchor n
         pack $side_content -side top -anchor n
-        pack $accounts -expand 1 -fill both -pady 10p
+        pack $accounts -side left -anchor nw -fill y -pady 10p
         pack $logo -padx 20p -pady 10p -side top -anchor n
         pack $message -padx 4p -pady 4p
         

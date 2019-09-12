@@ -30,6 +30,7 @@ namespace import ::tcl::mathfunc::round
 source [file join $conf::src_path crypto.tcl]
 source [file join $conf::src_path vault.tcl]
 source [file join $conf::src_path state.tcl]
+source [file join $conf::src_path colors.tcl]
 source [file join $conf::src_path window.tcl]
 source [file join $conf::src_path sframe.tcl]
 source [file join $conf::src_path cframe.tcl]

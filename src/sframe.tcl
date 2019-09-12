@@ -15,10 +15,8 @@ oo::class create SFrame {
         pack $Content -anchor nw
         $Canvas create window 0 0 -window $Container -anchor nw
         
-        # Grid only the scrollable canvas (without scrollbars).
-        grid $Canvas -row 0 -column 0 -sticky nsew
-        grid rowconfigure    $Root 0 -weight 1
-        grid columnconfigure $Root 0 -weight 1
+        # pack only the scrollable canvas (without scrollbars).
+        pack $Canvas -side left -anchor nw -fill y
         
         # Auto adjusts when the sframe is resized or the contents change size.
         bind $Canvas <Expose> [list [self] resize]
@@ -54,9 +52,9 @@ oo::class create SFrame {
 
         # Show the scrollbar as necessary
         if { [winfo reqheight $Content] > [winfo height $Canvas] } {
-            grid $ScrollBar -row 0 -column 1 -sticky ns
+            pack $ScrollBar -side left -anchor nw -fill y
         } else {
-            grid forget $ScrollBar
+            pack forget $ScrollBar
         }
     }
     
