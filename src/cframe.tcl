@@ -11,12 +11,13 @@ oo::class create CFrame {
         set Padding $padding
         set Labels {}
         set Command $cmd
-        set Root [::ttk::frame $path -relief flat]
+        set Root [::ttk::frame $path -relief groove]
         set Content [::ttk::frame ${Root}.content]
         my bind_method $Root <Enter> colorize_labels $HoverColor
         my bind_method $Root <Leave> colorize_labels $ResetColor
         my bind_method $Root <ButtonPress-1> press $PressColor
         my bind_method $Root <ButtonRelease-1> release $HoverColor
+        $Root configure -borderwidth 2
         pack $Content -padx ${Padding}p -pady ${Padding}p -fill both -expand 1
     }
 
@@ -61,12 +62,12 @@ oo::class create CFrame {
     }
     
     method press {multiplier} {
-        $Root configure -relief sunken
+        $Root configure -relief flat
         my colorize_labels $multiplier
     }
     
     method release {multiplier} {
-        $Root configure -relief flat
+        $Root configure -relief groove
         my colorize_labels $multiplier
         {*}$Command
     }

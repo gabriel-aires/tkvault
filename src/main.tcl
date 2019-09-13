@@ -7,7 +7,7 @@ namespace eval conf {
     set lib_path [file join $install_path "lib"]
     set img_path [file join $install_path "img"]
     set home_path $env(HOME)
-    set pkgs {menubar0.5 twapi4.3.5}
+    set pkgs {menubar0.5 twapi4.3.5 waldorf0.1}
     
     foreach pkg_name $pkgs {
         lappend ::auto_path [file join $lib_path $pkg_name]

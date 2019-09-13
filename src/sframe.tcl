@@ -12,11 +12,11 @@ oo::class create SFrame {
         set Container [::ttk::frame ${Canvas}.container]
         pack propagate $Container 0
         set Content [::ttk::frame ${Container}.content]
-        pack $Content -anchor nw
+        pack $Content -anchor nw -fill both -expand 1
         $Canvas create window 0 0 -window $Container -anchor nw
         
         # pack only the scrollable canvas (without scrollbars).
-        pack $Canvas -side left -anchor nw -fill y
+        pack $Canvas -side left -anchor nw -fill both -expand 1
         
         # Auto adjusts when the sframe is resized or the contents change size.
         bind $Canvas <Expose> [list [self] resize]

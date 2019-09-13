@@ -4,15 +4,17 @@ oo::class create Gui {
     constructor {vault operation target controller} {
         package require Tk
         package require menubar
+        package require ttk::theme::waldorf
         set Vault $vault
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "clam" : "vista"}]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
         set ScrolledFrame {}
         set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
-        font create "mono" -family "Courier" -weight "bold" -size 21
+        font create "icon" -family "Courier" -weight "bold" -size 24
+        font create "large" -family "Helvetica" -weight "bold" -size 16
         my update_theme
     }
     
@@ -107,7 +109,16 @@ oo::class create Gui {
         $state set Output [$Vault count_credentials]
         $msg configure -text "Stored Credentials: "
         $count configure -textvariable [$state var Output]
-        pack $msg $count -side left -padx 20p -pady 20p
+        pack $msg $count -side left -padx 20p -fill x -expand 1
+    }
+    
+    method form_content {frame} {
+        set state       [State new]
+        set add_login   [::ttk::button ${frame}.add_login -text "New Login" -width 20]
+        set add_card    [::ttk::button ${frame}.add_card -text "New Card" -width 20]
+        set add_doc     [::ttk::button ${frame}.add_doc -text "New Document" -width 20]
+        set add_note    [::ttk::button ${frame}.add_note -text "New Note" -width 20]
+        pack $add_login $add_card $add_doc $add_note -pady 5p -ipady 5p
     }
     
     method accounts_list {parent_frame} {
@@ -125,23 +136,23 @@ oo::class create Gui {
         
         foreach name [lsort [dict keys $credentials]] {
             set id      [dict get $credentials $name]
-            set cframe  [CFrame new ${content}.button_$name {puts click} 1]
+            set cframe  [CFrame new ${content}.button_$name {puts click} 0]
             set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon gray 30 azure 3]
+            set left    [$cframe add_label [$cframe content].icon IndianRed 3 gray 30]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name gray 30 azure 3]
+            set top     [$cframe add_label ${right}.name IndianRed 3 gray 100]
             set bottom  [$cframe add_label ${right}.id gray 100 gray 40]
             set capital [string toupper [string index $name 0]]
-            $left configure -text " $capital " -font "mono"
-            $top configure -text " Name: $name " -anchor nw
-            $bottom configure -text " Identity: $id "
+            $left configure -text " $capital " -font "icon"
+            $top configure -text " $name " -anchor nw -font "large"
+            $bottom configure -text " login: $id "
             pack $left -side left -fill both
             pack $right -side left -fill both -expand 1
             pack $top $bottom -side top -fill both -expand 1 -anchor nw
             pack $button -fill both -expand 1
         }
         
-        pack $root -side left -fill y -anchor nw
+        pack $root -side left -fill both -expand 1 -pady 10p
     }
     
     method main {} {
@@ -149,12 +160,14 @@ oo::class create Gui {
 
         set main_state [State new]
         set container [::ttk::frame .main]
-        set sidebar [::ttk::frame .main.sidebar]
-        set side_top [::ttk::frame .main.sidebar.top]
-        set side_content [::ttk::frame .main.sidebar.content]       
+        set sidebar [::ttk::frame .main.sidebar -relief groove -borderwidth 2]   
         set accounts [::ttk::frame .main.accounts]
+        set form [::ttk::frame .main.form -relief groove -borderwidth 2]
+        set form_header [::ttk::frame .main.form.header]
+        set form_content [::ttk::frame .main.form.conent]
+        set form_footer [::ttk::frame .main.form.footer]
+        set logo [::ttk::label .main.sidebar.logo]
         set status [::ttk::frame .main.status]    
-        set logo [::ttk::label .main.sidebar.top.logo]
         set message [::ttk::label .main.status.message]
         
         $status configure -relief groove
@@ -163,14 +176,15 @@ oo::class create Gui {
         
         pack $container -expand 1 -fill both
         pack $status -side bottom -fill x
-        pack $sidebar -side left -anchor n
-        pack $side_top -side top -anchor n
-        pack $side_content -side top -anchor n
-        pack $accounts -side left -anchor nw -fill y -pady 10p
-        pack $logo -padx 20p -pady 10p -side top -anchor n
-        pack $message -padx 4p -pady 4p
+        pack $sidebar -side left -anchor n -padx 20p -pady 20p -ipadx 10p -ipady 20p
+        pack $accounts -side left -fill y -pady 10p
+        pack $form -fill both -expand 1 -padx 20p -pady 20p
+        pack $form_header $form_content $form_footer -fill both -expand 1 -pady 20p
+        pack $logo -padx 20p -pady 20p
+        pack $message
         
-        my side_content $side_content
+        my side_content $sidebar
+        my form_content $form_content
         my accounts_list $accounts
         $Root maximize
     }
