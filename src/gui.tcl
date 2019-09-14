@@ -4,30 +4,32 @@ oo::class create Gui {
     constructor {vault operation target controller} {
         package require Tk
         package require menubar
-        package require ttk::theme::waldorf
+        package require ttk::theme::Arc
         set Vault $vault
         set Operation $operation
         set Target $target
         set Controller $controller
         set Root [Window new "."]
         set ScreenWidth [winfo screenwidth "."]
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
-        set Logo [image create photo -file [file join $::conf::img_path "icon_small.png"]]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "Arc" : "vista"}]
         my update_theme
         
         # responsive layout
         if [<= $ScreenWidth 1366] {
+            set Logo [image create photo -file [file join $::conf::img_path "icon_small.png"]]
             set Icon [image create photo -file [file join $::conf::img_path "icon_gray_small.png"]]
             font create "icon" -family "Courier" -weight "bold" -size 24
             font create "large" -family "Helvetica" -weight "bold" -size 14
             font create "regular" -family "Helvetica" -size 10
         } elseif [<= $ScreenWidth 1920] {
-            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_medium.png"]]
+            set Logo [image create photo -file [file join $::conf::img_path "icon_small.png"]]
+            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_small.png"]]
             font create "icon" -family "Courier" -weight "bold" -size 32
             font create "large" -family "Helvetica" -weight "bold" -size 16
             font create "regular" -family "Helvetica" -size 11
         } else {
-            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_large.png"]]
+            set Logo [image create photo -file [file join $::conf::img_path "icon_medium.png"]]
+            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_medium.png"]]
             font create "icon" -family "Courier" -weight "bold" -size 48
             font create "large" -family "Helvetica" -weight "bold" -size 18
             font create "regular" -family "Helvetica" -size 12
@@ -154,10 +156,10 @@ oo::class create Gui {
             set id      [dict get $credentials $name]
             set cframe  [CFrame new ${content}.button_$name {puts click} 0]
             set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon gray 100 IndianRed 3]
+            set left    [$cframe add_label [$cframe content].icon gray 97 IndianRed 3]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name gray 100 IndianRed 3]
-            set bottom  [$cframe add_label ${right}.id IndianRed 3 gray 100]
+            set top     [$cframe add_label ${right}.name gray 97 IndianRed 3]
+            set bottom  [$cframe add_label ${right}.id IndianRed 3 gray 97]
             set capital [string toupper [string index $name 0]]
             $left configure -text " $capital " -font "icon"
             $top configure -text " $name " -anchor nw -font "large"
@@ -168,6 +170,7 @@ oo::class create Gui {
             pack $button -fill both -expand 1
         }
         
+        $root configure -borderwidth 2 -relief groove
         pack $root -side left -fill both -expand 1 -pady 10p
     }
     

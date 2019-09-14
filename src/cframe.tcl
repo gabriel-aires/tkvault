@@ -17,7 +17,7 @@ oo::class create CFrame {
         my bind_method $Root <Leave> colorize_labels $ResetColor
         my bind_method $Root <ButtonPress-1> press $PressColor
         my bind_method $Root <ButtonRelease-1> release $HoverColor
-        $Root configure -borderwidth 2
+        $Root configure -borderwidth 1
         pack $Content -padx ${Padding}p -pady ${Padding}p -fill both -expand 1
     }
 
