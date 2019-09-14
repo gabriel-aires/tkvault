@@ -1,5 +1,5 @@
 oo::class create Gui {
-    variable Root Vault Operation Target Logo Controller Theme
+    variable Root Vault Operation Target Logo Icon Controller Theme ScreenWidth
     
     constructor {vault operation target controller} {
         package require Tk
@@ -9,13 +9,29 @@ oo::class create Gui {
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
-        set ScrolledFrame {}
-        set Logo [image create photo -file [file join $::conf::img_path "logo.png"]]        
         set Root [Window new "."]
-        font create "icon" -family "Courier" -weight "bold" -size 24
-        font create "large" -family "Helvetica" -weight "bold" -size 16
+        set ScreenWidth [winfo screenwidth "."]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "waldorf" : "vista"}]
+        set Logo [image create photo -file [file join $::conf::img_path "icon_small.png"]]
         my update_theme
+        
+        # responsive layout
+        if [<= $ScreenWidth 1366] {
+            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_small.png"]]
+            font create "icon" -family "Courier" -weight "bold" -size 24
+            font create "large" -family "Helvetica" -weight "bold" -size 14
+            font create "regular" -family "Helvetica" -size 10
+        } elseif [<= $ScreenWidth 1920] {
+            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_medium.png"]]
+            font create "icon" -family "Courier" -weight "bold" -size 32
+            font create "large" -family "Helvetica" -weight "bold" -size 16
+            font create "regular" -family "Helvetica" -size 11
+        } else {
+            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_large.png"]]
+            font create "icon" -family "Courier" -weight "bold" -size 48
+            font create "large" -family "Helvetica" -weight "bold" -size 18
+            font create "regular" -family "Helvetica" -size 12
+        }
     }
     
     method bind_method {origin event method} {
@@ -49,9 +65,9 @@ oo::class create Gui {
         
         $container configure -text "Authentication"
         $logo configure -image $Logo
-        $prompt configure -text "Enter Master Password"
-        $input configure -show * -textvariable [$state var Input] -takefocus 1 -width 30
-        $help configure -textvariable [$state var Notice]
+        $prompt configure -text "Enter Master Password" -font "regular"
+        $input configure -show * -textvariable [$state var Input] -takefocus 1 -width 30 -font "regular"
+        $help configure -textvariable [$state var Notice] -font "regular"
         $submit configure -text "Unlock" -command "[self] check_passwd $state $container $help"
         my bind_method $input <Key-Return> "check_passwd $state $container $help"
         
@@ -107,8 +123,8 @@ oo::class create Gui {
         set msg     [::ttk::label ${frame}.msg]
         set count   [::ttk::label ${frame}.count]
         $state set Output [$Vault count_credentials]
-        $msg configure -text "Stored Credentials: "
-        $count configure -textvariable [$state var Output]
+        $msg configure -text "Stored Credentials: "  -font "regular"
+        $count configure -textvariable [$state var Output] -font "regular"
         pack $msg $count -side left -padx 20p -fill x -expand 1
     }
     
@@ -138,14 +154,14 @@ oo::class create Gui {
             set id      [dict get $credentials $name]
             set cframe  [CFrame new ${content}.button_$name {puts click} 0]
             set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon IndianRed 3 gray 30]
+            set left    [$cframe add_label [$cframe content].icon gray 100 IndianRed 3]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name IndianRed 3 gray 100]
-            set bottom  [$cframe add_label ${right}.id gray 100 gray 40]
+            set top     [$cframe add_label ${right}.name gray 100 IndianRed 3]
+            set bottom  [$cframe add_label ${right}.id IndianRed 3 gray 100]
             set capital [string toupper [string index $name 0]]
             $left configure -text " $capital " -font "icon"
             $top configure -text " $name " -anchor nw -font "large"
-            $bottom configure -text " login: $id "
+            $bottom configure -text " login: $id " -font "regular"
             pack $left -side left -fill both
             pack $right -side left -fill both -expand 1
             pack $top $bottom -side top -fill both -expand 1 -anchor nw
@@ -171,8 +187,8 @@ oo::class create Gui {
         set message [::ttk::label .main.status.message]
         
         $status configure -relief groove
-        $logo configure -image $Logo
-        $message configure -textvariable [$main_state var Notice]
+        $logo configure -image $Icon
+        $message configure -textvariable [$main_state var Notice] -font "regular"
         
         pack $container -expand 1 -fill both
         pack $status -side bottom -fill x
