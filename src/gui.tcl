@@ -1,5 +1,5 @@
 oo::class create Gui {
-    variable Root Vault Operation Target Logo Icon Controller Theme ScreenWidth
+    variable Root Vault Operation Target Logo Icon WaterMark Controller Theme ScreenWidth
     
     constructor {vault operation target controller} {
         package require Tk
@@ -16,20 +16,23 @@ oo::class create Gui {
         
         # responsive layout
         if [<= $ScreenWidth 1366] {
-            set Logo [image create photo -file [file join $::conf::img_path "icon_small.png"]]
-            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_small.png"]]
+            set Logo        [image create photo -file [file join $::conf::img_path "logo_small.png"]]
+            set Icon        [image create photo -file [file join $::conf::img_path "icon_small.png"]]
+            set WaterMark   [image create photo -file [file join $::conf::img_path "watermark_small.png"]]
             font create "icon" -family "Courier" -weight "bold" -size 24
             font create "large" -family "Helvetica" -weight "bold" -size 14
             font create "regular" -family "Helvetica" -size 10
         } elseif [<= $ScreenWidth 1920] {
-            set Logo [image create photo -file [file join $::conf::img_path "icon_small.png"]]
-            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_small.png"]]
+            set Logo        [image create photo -file [file join $::conf::img_path "logo_small.png"]]
+            set Icon        [image create photo -file [file join $::conf::img_path "icon_small.png"]]
+            set WaterMark   [image create photo -file [file join $::conf::img_path "watermark_small.png"]]
             font create "icon" -family "Courier" -weight "bold" -size 32
             font create "large" -family "Helvetica" -weight "bold" -size 16
             font create "regular" -family "Helvetica" -size 11
         } else {
-            set Logo [image create photo -file [file join $::conf::img_path "icon_medium.png"]]
-            set Icon [image create photo -file [file join $::conf::img_path "icon_gray_medium.png"]]
+            set Logo        [image create photo -file [file join $::conf::img_path "logo_medium.png"]]
+            set Icon        [image create photo -file [file join $::conf::img_path "icon_medium.png"]]
+            set WaterMark   [image create photo -file [file join $::conf::img_path "watermark_medium.png"]]
             font create "icon" -family "Courier" -weight "bold" -size 48
             font create "large" -family "Helvetica" -weight "bold" -size 18
             font create "regular" -family "Helvetica" -size 12
@@ -66,7 +69,7 @@ oo::class create Gui {
         set help [::ttk::label .auth.form.help]
         
         $container configure -text "Authentication"
-        $logo configure -image $Logo
+        $logo configure -image $Icon
         $prompt configure -text "Enter Master Password" -font "regular"
         $input configure -show * -textvariable [$state var Input] -takefocus 1 -width 30 -font "regular"
         $help configure -textvariable [$state var Notice] -font "regular"
@@ -156,10 +159,10 @@ oo::class create Gui {
             set id      [dict get $credentials $name]
             set cframe  [CFrame new ${content}.button_$name {puts click} 0]
             set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon gray 97 IndianRed 3]
+            set left    [$cframe add_label [$cframe content].icon gray 97 LightBlue 4]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name gray 97 IndianRed 3]
-            set bottom  [$cframe add_label ${right}.id IndianRed 3 gray 97]
+            set top     [$cframe add_label ${right}.name gray 97 LightBlue 4]
+            set bottom  [$cframe add_label ${right}.id LightBlue 4 gray 97]
             set capital [string toupper [string index $name 0]]
             $left configure -text " $capital " -font "icon"
             $top configure -text " $name " -anchor nw -font "large"
@@ -190,7 +193,7 @@ oo::class create Gui {
         set message [::ttk::label .main.status.message]
         
         $status configure -relief groove
-        $logo configure -image $Icon
+        $logo configure -image $WaterMark
         $message configure -textvariable [$main_state var Notice] -font "regular"
         
         pack $container -expand 1 -fill both
