@@ -1,5 +1,5 @@
 oo::class create Gui {
-    variable Root Vault Operation Target Logo Icon WaterMark Controller Theme ScreenWidth
+    variable Root Vault Operation Target Controller Theme Img IconNote ScreenWidth
     
     constructor {vault operation target controller} {
         package require Tk
@@ -9,6 +9,7 @@ oo::class create Gui {
         set Operation $operation
         set Target $target
         set Controller $controller
+        set Img {}
         set Root [Window new "."]
         set ScreenWidth [winfo screenwidth "."]
         set Theme [expr {$::tcl_platform(platform) == "unix" ? "Arc" : "vista"}]
@@ -16,27 +17,32 @@ oo::class create Gui {
         
         # responsive layout
         if [<= $ScreenWidth 1366] {
-            set Logo        [image create photo -file [file join $::conf::img_path "logo_small.png"]]
-            set Icon        [image create photo -file [file join $::conf::img_path "icon_small.png"]]
-            set WaterMark   [image create photo -file [file join $::conf::img_path "watermark_small.png"]]
+            my create_icons "small"
             font create "icon" -family "Courier" -weight "bold" -size 24
             font create "large" -family "Helvetica" -weight "bold" -size 14
             font create "regular" -family "Helvetica" -size 10
         } elseif [<= $ScreenWidth 1920] {
-            set Logo        [image create photo -file [file join $::conf::img_path "logo_small.png"]]
-            set Icon        [image create photo -file [file join $::conf::img_path "icon_small.png"]]
-            set WaterMark   [image create photo -file [file join $::conf::img_path "watermark_small.png"]]
+            my create_icons "small"
             font create "icon" -family "Courier" -weight "bold" -size 32
             font create "large" -family "Helvetica" -weight "bold" -size 16
             font create "regular" -family "Helvetica" -size 11
         } else {
-            set Logo        [image create photo -file [file join $::conf::img_path "logo_medium.png"]]
-            set Icon        [image create photo -file [file join $::conf::img_path "icon_medium.png"]]
-            set WaterMark   [image create photo -file [file join $::conf::img_path "watermark_medium.png"]]
+            my create_icons "medium"
             font create "icon" -family "Courier" -weight "bold" -size 48
             font create "large" -family "Helvetica" -weight "bold" -size 18
             font create "regular" -family "Helvetica" -size 12
         }
+    }
+    
+    method create_icons {size} {
+        dict set Img logo         [image create photo -file [file join $::conf::img_path "logo_$size.png"]]
+        dict set Img watermark    [image create photo -file [file join $::conf::img_path "watermark_$size.png"]]
+        dict set Img login        [image create photo -file [file join $::conf::img_path "login_$size.png"]]
+        dict set Img card         [image create photo -file [file join $::conf::img_path "card_$size.png"]]
+        dict set Img document     [image create photo -file [file join $::conf::img_path "document_$size.png"]]
+        dict set Img note         [image create photo -file [file join $::conf::img_path "note_$size.png"]]
+        #dict set Img back         [image create photo -file [file join $::conf::img_path "back_$size.png"]]
+        #dict set Img delete       [image create photo -file [file join $::conf::img_path "delete_$size.png"]]
     }
     
     method bind_method {origin event method} {
@@ -69,7 +75,7 @@ oo::class create Gui {
         set help [::ttk::label .auth.form.help]
         
         $container configure -text "Authentication"
-        $logo configure -image $Icon
+        $logo configure -image [dict get $Img watermark]
         $prompt configure -text "Enter Master Password" -font "regular"
         $input configure -show * -textvariable [$state var Input] -takefocus 1 -width 30 -font "regular"
         $help configure -textvariable [$state var Notice] -font "regular"
@@ -135,11 +141,12 @@ oo::class create Gui {
     
     method form_content {frame} {
         set state       [State new]
-        set add_login   [::ttk::button ${frame}.add_login -text "New Login" -width 20]
-        set add_card    [::ttk::button ${frame}.add_card -text "New Card" -width 20]
-        set add_doc     [::ttk::button ${frame}.add_doc -text "New Document" -width 20]
-        set add_note    [::ttk::button ${frame}.add_note -text "New Note" -width 20]
-        pack $add_login $add_card $add_doc $add_note -pady 5p -ipady 5p
+        set add_login   [::ttk::button ${frame}.add_login -text "New Login" -image [dict get $Img login] -compound top -width 40]
+        set add_card    [::ttk::button ${frame}.add_card -text "New Card" -image [dict get $Img card] -compound top -width 40]
+        set add_doc     [::ttk::button ${frame}.add_doc -text "New Document" -image [dict get $Img document] -compound top -width 40]
+        set add_note    [::ttk::button ${frame}.add_note -text "New Note" -image [dict get $Img note] -compound top -width 40]
+        grid $add_login $add_card -padx 5p -pady 5p -ipadx 5p -ipady 5p -sticky news
+        grid $add_doc $add_note -padx 5p -pady 5p -ipadx 5p -ipady 5p -sticky news
     }
     
     method accounts_list {parent_frame} {
@@ -159,10 +166,10 @@ oo::class create Gui {
             set id      [dict get $credentials $name]
             set cframe  [CFrame new ${content}.button_$name {puts click} 0]
             set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon gray 97 LightBlue 4]
+            set left    [$cframe add_label [$cframe content].icon IndianRed 4 gray 97]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name gray 97 LightBlue 4]
-            set bottom  [$cframe add_label ${right}.id LightBlue 4 gray 97]
+            set top     [$cframe add_label ${right}.name gray 97 IndianRed 4]
+            set bottom  [$cframe add_label ${right}.id IndianRed 4 gray 97]
             set capital [string toupper [string index $name 0]]
             $left configure -text " $capital " -font "icon"
             $top configure -text " $name " -anchor nw -font "large"
@@ -186,14 +193,17 @@ oo::class create Gui {
         set accounts [::ttk::frame .main.accounts]
         set form [::ttk::frame .main.form -relief groove -borderwidth 2]
         set form_header [::ttk::frame .main.form.header]
-        set form_content [::ttk::frame .main.form.conent]
         set form_footer [::ttk::frame .main.form.footer]
+        set form_body [::ttk::frame .main.form.body]
+        set form_left [::ttk::frame .main.form.body.left]
+        set form_right [::ttk::frame .main.form.body.right]
+        set form_content [::ttk::frame .main.form.body.content]
         set logo [::ttk::label .main.sidebar.logo]
         set status [::ttk::frame .main.status]    
         set message [::ttk::label .main.status.message]
         
         $status configure -relief groove
-        $logo configure -image $WaterMark
+        $logo configure -image [dict get $Img logo]
         $message configure -textvariable [$main_state var Notice] -font "regular"
         
         pack $container -expand 1 -fill both
@@ -201,13 +211,19 @@ oo::class create Gui {
         pack $sidebar -side left -anchor n -padx 20p -pady 20p -ipadx 10p -ipady 20p
         pack $accounts -side left -fill y -pady 10p
         pack $form -fill both -expand 1 -padx 20p -pady 20p
-        pack $form_header $form_content $form_footer -fill both -expand 1 -pady 20p
+        pack $form_header -side top -fill both -expand 1
+        pack $form_footer -side bottom -fill both -expand 1
+        pack $form_left -side left -fill both -expand 1
+        pack $form_right -side right -fill both -expand 1
+        pack $form_content
+        pack $form_body
         pack $logo -padx 20p -pady 20p
         pack $message
         
         my side_content $sidebar
         my form_content $form_content
         my accounts_list $accounts
+        
         $Root maximize
     }
     
