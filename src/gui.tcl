@@ -66,9 +66,9 @@ oo::class create Gui {
         
         set state [State new]
         set container [::ttk::labelframe .auth]
-        set left [::ttk::frame .auth.logo]
+        set top [::ttk::frame .auth.logo]
         set logo [::ttk::label .auth.logo.img]
-        set right [::ttk::frame .auth.form]
+        set bottom [::ttk::frame .auth.form]
         set prompt [::ttk::label .auth.form.passwd_label]
         set input [::ttk::entry .auth.form.passwd_entry]
         set submit [::ttk::button .auth.form.submit]
@@ -82,13 +82,13 @@ oo::class create Gui {
         $submit configure -text "Unlock" -command "[self] check_passwd $state $container $help"
         my bind_method $input <Key-Return> "check_passwd $state $container $help"
         
-        pack $container -expand 1 -fill both -pady 2p -padx 2p
-        pack $left $right -side left -fill both -expand 1 -pady 4p -ipady 4p -padx 4p -ipadx 4p
-        pack $logo
-        pack $prompt -pady 3p
-        pack $input -pady 3p
-        pack $submit -pady 3p
-        pack $help -pady 3p
+        pack $container -expand 1 -fill both -ipadx 15p -ipady 15p
+        pack $top $bottom -side top -fill both -expand 1
+        pack $logo -side bottom -anchor s -pady 5p
+        pack $prompt -pady 5p
+        pack $input -pady 5p
+        pack $submit -pady 5p
+        pack $help -pady 5p
         
         $Root focus
         focus $input
