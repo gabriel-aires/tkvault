@@ -6,8 +6,8 @@ oo::class create CFrame {
 
     constructor {path cmd padding} {
         set ResetColor 0
-        set HoverColor 3
-        set PressColor 1
+        set HoverColor -1
+        set PressColor -2
         set Padding $padding
         set Labels {}
         set Command $cmd
@@ -17,7 +17,7 @@ oo::class create CFrame {
         my bind_method $Root <Leave> colorize_labels $ResetColor
         my bind_method $Root <ButtonPress-1> press $PressColor
         my bind_method $Root <ButtonRelease-1> release $HoverColor
-        $Root configure -borderwidth 1
+        $Root configure -borderwidth 0
         pack $Content -padx ${Padding}p -pady ${Padding}p -fill both -expand 1
     }
 

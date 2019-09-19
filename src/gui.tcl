@@ -1,5 +1,5 @@
 oo::class create Gui {
-    variable Root Vault Operation Target Controller Theme Img IconNote ScreenWidth
+    variable Root Vault Operation Target Controller Theme Accounts ScreenWidth
     
     constructor {vault operation target controller} {
         package require Tk
@@ -19,30 +19,40 @@ oo::class create Gui {
         if [<= $ScreenWidth 1366] {
             my create_icons "small"
             font create "icon" -family "Courier" -weight "bold" -size 24
-            font create "large" -family "Helvetica" -weight "bold" -size 14
+            font create "large" -family "Helvetica" -size 13
             font create "regular" -family "Helvetica" -size 10
         } elseif [<= $ScreenWidth 1920] {
-            my create_icons "small"
-            font create "icon" -family "Courier" -weight "bold" -size 32
-            font create "large" -family "Helvetica" -weight "bold" -size 16
-            font create "regular" -family "Helvetica" -size 11
-        } else {
             my create_icons "medium"
-            font create "icon" -family "Courier" -weight "bold" -size 48
-            font create "large" -family "Helvetica" -weight "bold" -size 18
+            font create "icon" -family "Courier" -weight "bold" -size 32
+            font create "large" -family "Helvetica" -size 20
             font create "regular" -family "Helvetica" -size 12
+        } else {
+            my create_icons "large"
+            font create "icon" -family "Courier" -weight "bold" -size 48
+            font create "large" -family "Helvetica" -size 20
+            font create "regular" -family "Helvetica" -size 14
         }
     }
     
+    method create_photo {name size} {
+        image create photo ::img::$name -file [file join $::conf::img_path "${name}_${size}.png"]    
+    }
+    
     method create_icons {size} {
-        dict set Img logo         [image create photo -file [file join $::conf::img_path "logo_$size.png"]]
-        dict set Img watermark    [image create photo -file [file join $::conf::img_path "watermark_$size.png"]]
-        dict set Img login        [image create photo -file [file join $::conf::img_path "login_$size.png"]]
-        dict set Img card         [image create photo -file [file join $::conf::img_path "card_$size.png"]]
-        dict set Img document     [image create photo -file [file join $::conf::img_path "document_$size.png"]]
-        dict set Img note         [image create photo -file [file join $::conf::img_path "note_$size.png"]]
-        #dict set Img back         [image create photo -file [file join $::conf::img_path "back_$size.png"]]
-        #dict set Img delete       [image create photo -file [file join $::conf::img_path "delete_$size.png"]]
+        foreach item {
+            logo
+            watermark
+            login
+            card
+            document
+            note
+            show
+            hide
+            info
+            add
+        } {
+            my create_photo $item $size
+        }
     }
     
     method bind_method {origin event method} {
@@ -55,7 +65,7 @@ oo::class create Gui {
         if $success {
             $help configure -foreground "blue"
             $state set Notice "Welcome!"
-            after 1000 "destroy $auth_container; $state destroy; [self] main"
+            after 1000 "destroy $auth_container; $state destroy; [self] layout"
         } else {
             $help configure -foreground "red"
         }
@@ -75,7 +85,7 @@ oo::class create Gui {
         set help [::ttk::label .auth.form.help]
         
         $container configure -text "Authentication"
-        $logo configure -image [dict get $Img watermark]
+        $logo configure -image ::img::watermark
         $prompt configure -text "Enter Master Password" -font "regular"
         $input configure -show * -textvariable [$state var Input] -takefocus 1 -width 30 -font "regular"
         $help configure -textvariable [$state var Notice] -font "regular"
@@ -129,26 +139,6 @@ oo::class create Gui {
         }
     }
     
-    method side_content {frame} {
-        set state   [State new]
-        set msg     [::ttk::label ${frame}.msg]
-        set count   [::ttk::label ${frame}.count]
-        $state set Output [$Vault count_credentials]
-        $msg configure -text "Stored Credentials: "  -font "regular"
-        $count configure -textvariable [$state var Output] -font "regular"
-        pack $msg $count -side left -padx 20p -fill x -expand 1
-    }
-    
-    method form_content {frame} {
-        set state       [State new]
-        set add_login   [::ttk::button ${frame}.add_login -text "New Login" -image [dict get $Img login] -compound top -width 40]
-        set add_card    [::ttk::button ${frame}.add_card -text "New Card" -image [dict get $Img card] -compound top -width 40]
-        set add_doc     [::ttk::button ${frame}.add_doc -text "New Document" -image [dict get $Img document] -compound top -width 40]
-        set add_note    [::ttk::button ${frame}.add_note -text "New Note" -image [dict get $Img note] -compound top -width 40]
-        grid $add_login $add_card -padx 5p -pady 5p -ipadx 5p -ipady 5p -sticky news
-        grid $add_doc $add_note -padx 5p -pady 5p -ipadx 5p -ipady 5p -sticky news
-    }
-    
     method accounts_list {parent_frame} {
         set state   [State new]
         $Vault show_credentials $state
@@ -184,45 +174,57 @@ oo::class create Gui {
         pack $root -side left -fill both -expand 1 -pady 10p
     }
     
-    method main {} {
+    method side_content {frame} {
+        set container   [::ttk::frame ${frame}.container]
+        set login_controls   [Controls new $container "login" {OliveDrab 2}]
+        set card_controls    [Controls new $container "card" {firebrick 3}]
+        set doc_controls     [Controls new $container "document" {gold 2}]
+        set note_controls    [Controls new $container "note" {cyan 4}]
+        pack $container -pady 5p -padx 5p
+        pack [$login_controls get_container] -pady 5p -fill x
+        pack [$card_controls get_container] -pady 5p -fill x
+        pack [$doc_controls get_container] -pady 5p -fill x
+        pack [$note_controls get_container] -pady 5p -fill x
+    }
+    
+    method main_content {frame} {
+        if [eq [$Vault count_credentials] 0] {
+            set logo [::ttk::label ${frame}.logo]
+            $logo configure -image ::img::logo
+            pack $logo -fill y -expand 1 -pady 5p
+        } else {
+            my accounts_list $frame
+        }
+    }
+    
+    method footer_content {frame} {
+        set state [State new]
+        set container [::ttk::frame ${frame}.section]
+        set message [::ttk::label ${container}.message]
+        set info [::ttk::label ${container}.info]
+        $message configure -text "Vault Items: " -font "regular"
+        $info configure -textvariable [$state var Notice] -font "regular"
+        $state set Notice [$Vault count_credentials]
+        pack $message $info -side left -pady 4p
+        pack $container -pady 1p
+    }
+    
+    method layout {} {
         my menubar
 
-        set main_state [State new]
-        set container [::ttk::frame .main]
-        set sidebar [::ttk::frame .main.sidebar -relief groove -borderwidth 2]   
-        set accounts [::ttk::frame .main.accounts]
-        set form [::ttk::frame .main.form -relief groove -borderwidth 2]
-        set form_header [::ttk::frame .main.form.header]
-        set form_footer [::ttk::frame .main.form.footer]
-        set form_body [::ttk::frame .main.form.body]
-        set form_left [::ttk::frame .main.form.body.left]
-        set form_right [::ttk::frame .main.form.body.right]
-        set form_content [::ttk::frame .main.form.body.content]
-        set logo [::ttk::label .main.sidebar.logo]
-        set status [::ttk::frame .main.status]    
-        set message [::ttk::label .main.status.message]
+        set body [::ttk::frame .body]
+        set sidebar [::ttk::frame .body.sidebar]   
+        set main [::ttk::frame .body.main -relief groove]
+        set footer [::ttk::frame .body.footer -relief groove]        
         
-        $status configure -relief groove
-        $logo configure -image [dict get $Img logo]
-        $message configure -textvariable [$main_state var Notice] -font "regular"
-        
-        pack $container -expand 1 -fill both
-        pack $status -side bottom -fill x
-        pack $sidebar -side left -anchor n -padx 20p -pady 20p -ipadx 10p -ipady 20p
-        pack $accounts -side left -fill y -pady 10p
-        pack $form -fill both -expand 1 -padx 20p -pady 20p
-        pack $form_header -side top -fill both -expand 1
-        pack $form_footer -side bottom -fill both -expand 1
-        pack $form_left -side left -fill both -expand 1
-        pack $form_right -side right -fill both -expand 1
-        pack $form_content
-        pack $form_body
-        pack $logo -padx 20p -pady 20p
-        pack $message
+        pack $body -fill both -expand 1
+        pack $footer -side bottom -fill x
+        pack $sidebar -side left -fill y
+        pack $main -side right -fill both -expand 1 -padx 5p -pady 10p
         
         my side_content $sidebar
-        my form_content $form_content
-        my accounts_list $accounts
+        my main_content $main
+        my footer_content $footer
         
         $Root maximize
     }

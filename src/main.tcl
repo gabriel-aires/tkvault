@@ -27,6 +27,10 @@ package require blowfish
 namespace import ::tcl::mathop::*
 namespace import ::tcl::mathfunc::rand
 namespace import ::tcl::mathfunc::round
+namespace import ::tcl::mathfunc::floor
+namespace import ::tcl::mathfunc::ceil
+namespace import ::tcl::mathfunc::double
+namespace import ::tcl::mathfunc::int
 source [file join $conf::src_path crypto.tcl]
 source [file join $conf::src_path vault.tcl]
 source [file join $conf::src_path state.tcl]
@@ -34,6 +38,7 @@ source [file join $conf::src_path colors.tcl]
 source [file join $conf::src_path window.tcl]
 source [file join $conf::src_path sframe.tcl]
 source [file join $conf::src_path cframe.tcl]
+source [file join $conf::src_path controls.tcl]
 source [file join $conf::src_path gui.tcl]
 source [file join $conf::src_path cli.tcl]
 source [file join $conf::src_path controller.tcl]
