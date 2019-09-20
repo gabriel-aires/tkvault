@@ -4,7 +4,7 @@ oo::class create Gui {
     constructor {vault operation target controller} {
         package require Tk
         package require menubar
-        package require ttk::theme::Arc
+        package require ttk::theme::Breeze
         set Vault $vault
         set Operation $operation
         set Target $target
@@ -12,7 +12,7 @@ oo::class create Gui {
         set Img {}
         set Root [Window new "."]
         set ScreenWidth [winfo screenwidth "."]
-        set Theme [expr {$::tcl_platform(platform) == "unix" ? "Arc" : "vista"}]
+        set Theme [expr {$::tcl_platform(platform) == "unix" ? "Breeze" : "vista"}]
         my update_theme
         
         # responsive layout
