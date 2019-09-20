@@ -1,5 +1,5 @@
 oo::class create Gui {
-    variable Root Vault Operation Target Controller Theme Accounts ScreenWidth
+    variable Root Vault Operation Target Controller Theme Accounts ScreenWidth ScreenHeight ScreenSize PixelDensity
     
     constructor {vault operation target controller} {
         package require Tk
@@ -12,16 +12,19 @@ oo::class create Gui {
         set Img {}
         set Root [Window new "."]
         set ScreenWidth [winfo screenwidth "."]
+        set ScreenHeight [winfo screenheight "."]
+        set ScreenSize [/ [sqrt [+ [** [winfo screenmmwidth "."] 2] [** [winfo screenmmheight "."] 2]]] 25.4]
+        set PixelDensity [/ [sqrt [+ [** $ScreenWidth 2] [** $ScreenHeight 2]]] $ScreenSize]
         set Theme [expr {$::tcl_platform(platform) == "unix" ? "Breeze" : "vista"}]
         my update_theme
         
         # responsive layout
-        if [<= $ScreenWidth 1366] {
+        if [<= $PixelDensity 130.0] {
             my create_icons "small"
             font create "icon" -family "Courier" -weight "bold" -size 20
             font create "large" -family "Helvetica" -size 14
             font create "regular" -family "Helvetica" -size 11
-        } elseif [<= $ScreenWidth 1920] {
+        } elseif [<= $PixelDensity 260.0] {
             my create_icons "medium"
             font create "icon" -family "Courier" -weight "bold" -size 24
             font create "large" -family "Helvetica" -size 18

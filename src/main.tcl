@@ -31,6 +31,7 @@ namespace import ::tcl::mathfunc::floor
 namespace import ::tcl::mathfunc::ceil
 namespace import ::tcl::mathfunc::double
 namespace import ::tcl::mathfunc::int
+namespace import ::tcl::mathfunc::sqrt
 source [file join $conf::src_path crypto.tcl]
 source [file join $conf::src_path vault.tcl]
 source [file join $conf::src_path state.tcl]
