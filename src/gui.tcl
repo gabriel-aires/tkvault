@@ -18,19 +18,19 @@ oo::class create Gui {
         # responsive layout
         if [<= $ScreenWidth 1366] {
             my create_icons "small"
-            font create "icon" -family "Courier" -weight "bold" -size 24
-            font create "large" -family "Helvetica" -size 13
-            font create "regular" -family "Helvetica" -size 10
+            font create "icon" -family "Courier" -weight "bold" -size 20
+            font create "large" -family "Helvetica" -size 14
+            font create "regular" -family "Helvetica" -size 11
         } elseif [<= $ScreenWidth 1920] {
             my create_icons "medium"
-            font create "icon" -family "Courier" -weight "bold" -size 32
-            font create "large" -family "Helvetica" -size 20
-            font create "regular" -family "Helvetica" -size 12
+            font create "icon" -family "Courier" -weight "bold" -size 24
+            font create "large" -family "Helvetica" -size 18
+            font create "regular" -family "Helvetica" -size 13
         } else {
             my create_icons "large"
-            font create "icon" -family "Courier" -weight "bold" -size 48
-            font create "large" -family "Helvetica" -size 20
-            font create "regular" -family "Helvetica" -size 14
+            font create "icon" -family "Courier" -weight "bold" -size 28
+            font create "large" -family "Helvetica" -size 22
+            font create "regular" -family "Helvetica" -size 15
         }
     }
     
@@ -85,7 +85,7 @@ oo::class create Gui {
         set help [::ttk::label .auth.form.help]
         
         $container configure -text "Authentication"
-        $logo configure -image ::img::watermark
+        $logo configure -image ::img::logo
         $prompt configure -text "Enter Master Password" -font "regular"
         $input configure -show * -textvariable [$state var Input] -takefocus 1 -width 30 -font "regular"
         $help configure -textvariable [$state var Notice] -font "regular"
@@ -176,21 +176,21 @@ oo::class create Gui {
     
     method side_content {frame} {
         set container   [::ttk::frame ${frame}.container]
-        set login_controls   [Controls new $container "login" {OliveDrab 2}]
-        set card_controls    [Controls new $container "card" {firebrick 3}]
-        set doc_controls     [Controls new $container "document" {gold 2}]
-        set note_controls    [Controls new $container "note" {cyan 4}]
-        pack $container -pady 5p -padx 5p
-        pack [$login_controls get_container] -pady 5p -fill x
-        pack [$card_controls get_container] -pady 5p -fill x
-        pack [$doc_controls get_container] -pady 5p -fill x
-        pack [$note_controls get_container] -pady 5p -fill x
+        set login_controls   [Controls new $container "Login" {OliveDrab 2}]
+        set card_controls    [Controls new $container "Card" {firebrick 3}]
+        set doc_controls     [Controls new $container "Document" {gold 2}]
+        set note_controls    [Controls new $container "Note" {cyan 4}]
+        pack $container -pady 2p
+        pack [$login_controls get_container] -pady 1p -ipady 5p -fill x
+        pack [$card_controls get_container] -pady 1p -ipady 5p -fill x
+        pack [$doc_controls get_container] -pady 1p -ipady 5p -fill x
+        pack [$note_controls get_container] -pady 1p -ipady 5p -fill x
     }
     
     method main_content {frame} {
         if [eq [$Vault count_credentials] 0] {
             set logo [::ttk::label ${frame}.logo]
-            $logo configure -image ::img::logo
+            $logo configure -image ::img::watermark
             pack $logo -fill y -expand 1 -pady 5p
         } else {
             my accounts_list $frame
@@ -214,13 +214,13 @@ oo::class create Gui {
 
         set body [::ttk::frame .body]
         set sidebar [::ttk::frame .body.sidebar]   
-        set main [::ttk::frame .body.main -relief groove]
+        set main [::ttk::frame .body.main]
         set footer [::ttk::frame .body.footer -relief groove]        
         
         pack $body -fill both -expand 1
         pack $footer -side bottom -fill x
         pack $sidebar -side left -fill y
-        pack $main -side right -fill both -expand 1 -padx 5p -pady 10p
+        pack $main -side right -fill both -expand 1 -padx 2p -pady 2p
         
         my side_content $sidebar
         my main_content $main

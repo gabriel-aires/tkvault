@@ -6,7 +6,7 @@ oo::class create Controls {
         set Visibility          true
         set Container           [::ttk::frame ${parent}.controls_$name]
         set ColorSelector       [CFrame new ${Container}.color {puts click} 0]
-        set TypeLabel           [::ttk::label ${Container}.label -text " $name " -font "large" -background "white"]
+        set TypeLabel           [::ttk::label ${Container}.label]
         set DisplayInfo         [CFrame new ${Container}.display {puts click} 0]
         set VisibilitySwitch    [CFrame new ${Container}.visibility {puts click} 0]
         set AddCredential       [CFrame new ${Container}.add {puts click} 0]
@@ -18,42 +18,34 @@ oo::class create Controls {
         set visibility_label    [$VisibilitySwitch add_label [$VisibilitySwitch content].switch gray 100 gray 100]
         set add_button          [$AddCredential root]
         set add_label           [$AddCredential add_label [$AddCredential content].credential gray 100 gray 100]
-        set ref_height          [winfo reqheight $TypeLabel]
         
         foreach {img original} {
-            ::img::c_info ::img::info
-            ::img::c_show ::img::show
-            ::img::c_hide ::img::hide
-            ::img::c_add ::img::add
+            ::img::gray_info ::img::info
+            ::img::gray_show ::img::show
+            ::img::gray_hide ::img::hide
+            ::img::gray_add ::img::add
         } {
             if {$img ni [image names]} {
-                set original_width  [image width $original]
-                set original_height [image height $original]
-                set size_ratio_f    [/ [double $original_height] [double $ref_height]]
-                set size_ratio_i    [int [ceil $size_ratio_f]]
-                set aspect_ratio    [/ $original_width $original_height]
-                set img_width       [int [ceil [* $aspect_ratio $ref_height]]]
-                set img_height      [int [ceil [/ $img_width $aspect_ratio]]]
                 image create photo $img
-                $img copy $original -to 0 0 $img_width $img_height -subsample $size_ratio_i
+                $img put [$original data -grayscale -format png]
             }
         }
         
-        $Container configure -relief groove -borderwidth 1
-        $color_label configure -text " " -font "icon"
-        $info_label configure -image ::img::c_info
-        $visibility_label configure -image ::img::c_show
-        $add_label configure -image ::img::c_add
+        $color_label configure -text " 0 " -font "icon"
+        $TypeLabel configure -text " $name " -font "regular" -background "white"
+        $info_label configure -image ::img::gray_info -anchor center
+        $visibility_label configure -image ::img::gray_show -anchor center
+        $add_label configure -image ::img::gray_add -anchor center
         
         pack $color_button -side left -anchor w -fill y
         pack $add_button -side right -anchor e -fill y
         pack $visibility_button -side right -anchor e -fill y
         pack $info_button -side right -anchor e -fill y
-        pack $TypeLabel -fill both -expand 1
-        pack $color_label -anchor w -fill y -expand 1
-        pack $info_label -anchor w -fill y -expand 1
-        pack $visibility_label -anchor w -fill y -expand 1
-        pack $add_label -anchor w -fill y -expand 1
+        pack $color_label -fill y -expand 1
+        pack $TypeLabel -fill both -expand 1 -ipadx 2p
+        pack $info_label -fill y -expand 1 -ipadx 2p
+        pack $visibility_label -fill y -expand 1 -ipadx 2p
+        pack $add_label -fill y -expand 1 -ipadx 2p
     }
     
     method get_container {} {

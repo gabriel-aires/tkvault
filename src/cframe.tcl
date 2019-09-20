@@ -6,8 +6,8 @@ oo::class create CFrame {
 
     constructor {path cmd padding} {
         set ResetColor 0
-        set HoverColor -1
-        set PressColor -2
+        set HoverColor -0.4
+        set PressColor -1.1
         set Padding $padding
         set Labels {}
         set Command $cmd
@@ -43,8 +43,8 @@ oo::class create CFrame {
         lassign [my palette_range] color_min color_max
         lassign [my gray_range] gray_min gray_max
         set isgray [in $name [my gray_scale]]
-        set gray_delta [* 10 $multiplier]
-        set color_delta $multiplier
+        set gray_delta [int [floor [* 10 $multiplier]]]
+        set color_delta [int [floor $multiplier]]
         set delta [expr {$isgray ? $gray_delta : $color_delta}]
         set max [expr {$isgray ? $gray_max : $color_max}]
         set min [expr {$isgray ? $gray_min : $color_min}]
