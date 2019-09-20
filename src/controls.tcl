@@ -46,9 +46,33 @@ oo::class create Controls {
         pack $info_label -fill y -expand 1 -ipadx 2p
         pack $visibility_label -fill y -expand 1 -ipadx 2p
         pack $add_label -fill y -expand 1 -ipadx 2p
+        
+        bind $info_button       <Enter> +[list [self] toggle_image $DisplayInfo]
+        bind $info_button       <Leave> +[list [self] toggle_image $DisplayInfo]
+        bind $visibility_button <Enter> +[list [self] toggle_image $VisibilitySwitch]
+        bind $visibility_button <Leave> +[list [self] toggle_image $VisibilitySwitch]
+        bind $add_button        <Enter> +[list [self] toggle_image $AddCredential]
+        bind $add_button        <Leave> +[list [self] toggle_image $AddCredential]
     }
     
     method get_container {} {
         return $Container
+    }
+    
+    method toggle_image {cframe} {
+        set label           [lindex [$cframe get_labels] 0]
+        set current_image   [lindex [$label configure -image] end]
+        
+        if [string match ::img::gray_* $current_image] {
+            set first [string length "::img::gray_"]
+            set new_prefix "::img::"
+        } else {
+            set first [string length "::img::"]
+            set new_prefix "::img::gray_"
+        }
+        
+        set new_name [string range $current_image $first end]
+        set new_image "${new_prefix}${new_name}"
+        $label configure -image $new_image
     }
 }

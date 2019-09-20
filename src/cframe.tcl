@@ -37,7 +37,11 @@ oo::class create CFrame {
         my bind_method $path <ButtonPress-1> press $PressColor
         my bind_method $path <ButtonRelease-1> release $HoverColor
         return $path
-    }    
+    }
+    
+    method get_labels {} {
+        return $Labels
+    }
 
     method change_color {name index multiplier} {
         lassign [my palette_range] color_min color_max
@@ -73,7 +77,7 @@ oo::class create CFrame {
     }
     
     method bind_method {origin event method args} {
-        bind $origin $event "[self] $method $args"
+        bind $origin $event +[list [self] $method $args]
     }
     
     destructor {

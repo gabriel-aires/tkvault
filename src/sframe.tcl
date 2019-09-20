@@ -19,10 +19,10 @@ oo::class create SFrame {
         pack $Canvas -side left -anchor nw -fill both -expand 1
         
         # Auto adjusts when the sframe is resized or the contents change size.
-        bind $Canvas <Expose> [list [self] resize]
+        bind $Canvas <Expose> +[list [self] resize]
         
         # MouseWheel bindings
-        bind [winfo toplevel $Root] <MouseWheel> [list [self] scroll %W %D]
+        bind [winfo toplevel $Root] <MouseWheel> +[list [self] scroll %W %D]
     }
 
     method root {} {
