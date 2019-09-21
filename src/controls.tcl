@@ -31,7 +31,7 @@ oo::class create Controls {
             }
         }
         
-        $color_label configure -text " 0 " -font "icon"
+        $color_label configure -text " 16 " -font "icon"
         $TypeLabel configure -text " $name " -font "regular" -background "white"
         $info_label configure -image ::img::gray_info -anchor center
         $visibility_label configure -image ::img::gray_show -anchor center

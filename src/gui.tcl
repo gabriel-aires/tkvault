@@ -150,6 +150,7 @@ oo::class create Gui {
         set root [$sframe root]
         set content [$sframe content]
         set credentials {}
+        set buttons {}
         
         foreach {name id _} $raw_credentials {
             dict set credentials $name $id
@@ -157,12 +158,11 @@ oo::class create Gui {
         
         foreach name [lsort [dict keys $credentials]] {
             set id      [dict get $credentials $name]
-            set cframe  [CFrame new ${content}.button_$name {puts click} 0]
-            set button  [$cframe root]
-            set left    [$cframe add_label [$cframe content].icon IndianRed 4 gray 97]
+            set cframe  [CFrame new ${content}.button_$name {puts click} 2]
+            set left    [$cframe add_label [$cframe content].icon gray 30 gray 97]
             set right   [::ttk::frame [$cframe content].info]
-            set top     [$cframe add_label ${right}.name gray 97 IndianRed 4]
-            set bottom  [$cframe add_label ${right}.id IndianRed 4 gray 97]
+            set top     [$cframe add_label ${right}.name gray 97 gray 30]
+            set bottom  [$cframe add_label ${right}.id gray 30 gray 97]
             set capital [string toupper [string index $name 0]]
             $left configure -text " $capital " -font "icon"
             $top configure -text " $name " -anchor nw -font "large"
@@ -170,16 +170,22 @@ oo::class create Gui {
             pack $left -side left -fill both
             pack $right -side left -fill both -expand 1
             pack $top $bottom -side top -fill both -expand 1 -anchor nw
-            pack $button -fill both -expand 1
+            lappend buttons [$cframe root]
         }
         
+        foreach {a b c d e f} $buttons {
+            set buttons [string trimright [join [list $a $b $c $d $e $f] " "]]
+            grid {*}$buttons -sticky news -padx 16p -pady 8p
+        }
+        
+        grid columnconfigure $content "all" -uniform "buttons"
         $root configure -borderwidth 2 -relief groove
         pack $root -side left -fill both -expand 1 -pady 10p
     }
     
     method side_content {frame} {
         set container   [::ttk::frame ${frame}.container]
-        set login_controls   [Controls new $container "Login" {OliveDrab 2}]
+        set login_controls   [Controls new $container "Login" {gray 30}]
         set card_controls    [Controls new $container "Card" {firebrick 3}]
         set doc_controls     [Controls new $container "Document" {gold 2}]
         set note_controls    [Controls new $container "Note" {cyan 4}]
