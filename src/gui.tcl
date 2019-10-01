@@ -1,5 +1,7 @@
 oo::class create Gui {
-    variable Root Vault Operation Target Controller Theme Accounts ScreenWidth ScreenHeight ScreenSize PixelDensity
+    variable Root Vault Operation Target Controller Theme Accounts \
+        ScreenWidth ScreenHeight ScreenSize PixelDensity FontsAvailable \
+        RegularFont MonospaceFont
     
     constructor {vault operation target controller} {
         package require Tk
@@ -9,32 +11,93 @@ oo::class create Gui {
         set Operation $operation
         set Target $target
         set Controller $controller
-        set Img {}
         set Root [Window new "."]
         set ScreenWidth [winfo screenwidth "."]
         set ScreenHeight [winfo screenheight "."]
         set ScreenSize [/ [sqrt [+ [** [winfo screenmmwidth "."] 2] [** [winfo screenmmheight "."] 2]]] 25.4]
         set PixelDensity [/ [sqrt [+ [** $ScreenWidth 2] [** $ScreenHeight 2]]] $ScreenSize]
         set Theme [expr {$::tcl_platform(platform) == "unix" ? "Breeze" : "vista"}]
+        set FontsAvailable [font families]
+        set RegularFont {}
+        set MonospaceFont {}
+        my discover_fonts
         my update_theme
         
         # responsive layout
         if [<= $PixelDensity 130.0] {
             my create_icons "small"
-            font create "icon" -family "Courier" -weight "bold" -size 20
-            font create "large" -family "Helvetica" -size 14
-            font create "regular" -family "Helvetica" -size 11
+            my create_fonts 20 14 9
         } elseif [<= $PixelDensity 260.0] {
             my create_icons "medium"
-            font create "icon" -family "Courier" -weight "bold" -size 24
-            font create "large" -family "Helvetica" -size 18
-            font create "regular" -family "Helvetica" -size 13
+            my create_fonts 24 18 11
         } else {
             my create_icons "large"
-            font create "icon" -family "Courier" -weight "bold" -size 28
-            font create "large" -family "Helvetica" -size 22
-            font create "regular" -family "Helvetica" -size 15
+            my create_fonts 28 22 13
         }
+    }
+    
+    method discover_fonts {} {
+        foreach font {
+			"Droid Sans"
+			"Segoe UI"
+			"Lucida Sans Unicode"
+			"Calibri"
+			"Trebuchet MS"
+			"Century Gothic"
+			"Tahoma"
+			"Verdana"
+			"Arial"
+			"Georgia"
+			"Helvetica"
+			"Liberation Sans"
+			"DejaVu Sans"
+			"Bitstream Vera Sans"
+			"clean"
+            "newspaper"
+		} {
+			lappend regular_fonts $font [string tolower $font]
+		}
+
+		foreach font {
+			"Droid Sans Mono"
+			"Consolas"
+			"Hack"
+			"Inconsolata"
+			"Lucida Console"
+			"Liberation Mono"
+			"DejaVu Sans Mono"
+			"Bitstream Vera Sans Mono"
+            "Courier 10 Pitch"
+			"Courier New"
+            "Courier"
+			"System"
+			"Terminal"
+			"fixed"
+		} {
+			lappend monospace_fonts $font [string tolower $font]
+		}
+        
+        my select_font "regular" $regular_fonts
+        my select_font "monospace" $monospace_fonts
+    }
+    
+    method select_font {type families} {
+        foreach family $families {
+			if [in $family $FontsAvailable] {
+                if [== type "regular"] {
+                    set RegularFont $family
+                } else {
+                    set MonospaceFont $family
+                }
+				break
+			}
+		}
+    }
+    
+    method create_fonts {icon_size large_size regular_size} {
+        font create "icon" -family $MonospaceFont -weight "bold" -size $icon_size
+        font create "large" -family $RegularFont -size $large_size
+        font create "regular" -family $RegularFont -size $regular_size
     }
     
     method create_photo {name size} {
