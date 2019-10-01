@@ -116,6 +116,9 @@ oo::class create Gui {
             hide
             info
             add
+            favorites
+            archive
+            basket
         } {
             my create_photo $item $size
         }
@@ -246,7 +249,7 @@ oo::class create Gui {
         pack $root -side left -fill both -expand 1 -pady 10p
     }
     
-    method side_content {frame} {
+    method left_content {frame} {
         set container   [::ttk::frame ${frame}.container]
         set login_controls   [Controls new $container "Login" {gray 30}]
         set card_controls    [Controls new $container "Card" {firebrick 3}]
@@ -257,6 +260,17 @@ oo::class create Gui {
         pack [$card_controls get_container] -pady 1p -ipady 5p -fill x
         pack [$doc_controls get_container] -pady 1p -ipady 5p -fill x
         pack [$note_controls get_container] -pady 1p -ipady 5p -fill x
+    }
+
+    method right_content {frame width} {
+        set container   [::ttk::frame ${frame}.container -width $width]
+        set favorites_folder    [Folder new $container "Favorites" ::img::favorites {LightPink 1}]
+        set archive_folder      [Folder new $container "Archive" ::img::archive {burlywood 1}]
+        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {DarkOliveGreen 1}]
+        pack $container -pady 2p
+        pack [$favorites_folder get_container] -pady 1p -ipady 5p -fill x
+        pack [$archive_folder get_container] -pady 1p -ipady 5p -fill x
+        pack [$recycle_folder get_container] -pady 1p -ipady 5p -fill x
     }
     
     method main_content {frame} {
@@ -284,17 +298,20 @@ oo::class create Gui {
     method layout {} {
         my menubar
 
-        set body [::ttk::frame .body]
-        set sidebar [::ttk::frame .body.sidebar]   
-        set main [::ttk::frame .body.main]
-        set footer [::ttk::frame .body.footer -relief groove]        
+        set body    [::ttk::frame .body]
+        set left    [::ttk::frame .body.side_controls]
+        set right   [::ttk::frame .body.side_folders]
+        set main    [::ttk::frame .body.main]
+        set footer  [::ttk::frame .body.footer -relief groove]        
         
         pack $body -fill both -expand 1
         pack $footer -side bottom -fill x
-        pack $sidebar -side left -fill y
-        pack $main -side right -fill both -expand 1 -padx 2p -pady 2p
+        pack $left -side left -fill y
+        pack $right -side right -fill y
+        pack $main -fill both -expand 1 -padx 2p -pady 2p
         
-        my side_content $sidebar
+        my left_content $left
+        my right_content $right [winfo reqwidth $left]
         my main_content $main
         my footer_content $footer
         
