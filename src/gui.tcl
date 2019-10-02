@@ -241,12 +241,11 @@ oo::class create Gui {
         
         foreach {a b c d e f} $buttons {
             set buttons [string trimright [join [list $a $b $c $d $e $f] " "]]
-            grid {*}$buttons -sticky news -padx 16p -pady 8p
+            grid {*}$buttons -sticky news -padx 12p -pady 8p
         }
         
         grid columnconfigure $content "all" -uniform "buttons"
-        $root configure -borderwidth 2 -relief groove
-        pack $root -side left -fill both -expand 1 -pady 10p
+        pack $root -side left -fill both -expand 1 -pady 10p -padx 10p
     }
     
     method left_content {frame} {
@@ -264,9 +263,9 @@ oo::class create Gui {
 
     method right_content {frame width} {
         set container   [::ttk::frame ${frame}.container -width $width]
-        set favorites_folder    [Folder new $container "Favorites" ::img::favorites {LightPink 1}]
-        set archive_folder      [Folder new $container "Archive" ::img::archive {burlywood 1}]
-        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {DarkOliveGreen 1}]
+        set favorites_folder    [Folder new $container "Favorites" ::img::favorites {firebrick 3}]
+        set archive_folder      [Folder new $container "Archive" ::img::archive {gold 2}]
+        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {cyan 4}]
         pack $container -pady 2p
         pack [$favorites_folder get_container] -pady 1p -ipady 5p -fill x
         pack [$archive_folder get_container] -pady 1p -ipady 5p -fill x

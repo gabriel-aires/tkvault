@@ -11,12 +11,12 @@ oo::class create Folder {
         set Container           [$cframe root]
         set top                 [::ttk::frame [$cframe content].top]
         set bottom              [::ttk::frame [$cframe content].bottom]
-        set title               [$cframe add_label ${top}.title gray 3 $ColorName $ColorIndex]
-        set quantity            [$cframe add_label ${top}.quantity gray 3 $ColorName $ColorIndex]
-        set image               [$cframe add_label ${bottom}.image $ColorName $ColorIndex gray 20]
+        set title               [$cframe add_label ${top}.title gray 97 gray 20]
+        set quantity            [$cframe add_label ${top}.quantity gray 97 gray 20]
+        set image               [$cframe add_label ${bottom}.image $ColorName $ColorIndex gray 100]
         
-        $title configure -text $Label -font "large"
-        $quantity configure -text $Quantity -font "large"
+        $title configure -text $Label -font "regular"
+        $quantity configure -text $Quantity -font "regular"
         $image configure -image $Image -anchor center
         
         pack $Container -fill both
