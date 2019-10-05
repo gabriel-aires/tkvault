@@ -252,8 +252,8 @@ oo::class create Gui {
         set container   [::ttk::frame ${frame}.container]
         set login_controls   [Controls new $container "Login" {gray 30}]
         set card_controls    [Controls new $container "Card" {firebrick 3}]
-        set doc_controls     [Controls new $container "Document" {DarkOrange 3}]
-        set note_controls    [Controls new $container "Note" {cyan 4}]
+        set doc_controls     [Controls new $container "Document" {cyan 4}]
+        set note_controls    [Controls new $container "Note" {SlateBlue 2}]
         pack $container -pady 2p
         pack [$login_controls get_container] -pady 1p -ipady 5p -fill x
         pack [$card_controls get_container] -pady 1p -ipady 5p -fill x
@@ -264,12 +264,12 @@ oo::class create Gui {
     method right_content {frame width} {
         set container   [::ttk::frame ${frame}.container -width $width]
         set favorites_folder    [Folder new $container "Favorites" ::img::favorites {firebrick 3}]
-        set archive_folder      [Folder new $container "Archive" ::img::archive {DarkOrange 3}]
-        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {cyan 4}]
-        pack $container -pady 2p
-        pack [$favorites_folder get_container] -pady 5p -ipady 5p -fill x
-        pack [$archive_folder get_container] -pady 5p -ipady 5p -fill x
-        pack [$recycle_folder get_container] -pady 5p -ipady 5p -fill x
+        set archive_folder      [Folder new $container "Archive" ::img::archive {cyan 4}]
+        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {SlateBlue 2}]
+        pack $container -pady 2p -fill y -expand 1
+        pack [$favorites_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
+        pack [$archive_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
+        pack [$recycle_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
     }
     
     method main_content {frame} {

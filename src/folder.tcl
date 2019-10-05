@@ -24,7 +24,7 @@ oo::class create Folder {
         pack $bottom -fill both -expand 1
         pack $title -side left -fill y -ipadx 2p -anchor w
         pack $quantity -side left -fill y -expand 1 -ipadx 2p -anchor w
-        pack $image -fill both -expand 1 -ipadx 20p -ipady 8p
+        pack $image -fill both -expand 1 -ipadx 20p
     }
     
     method get_container {} {
