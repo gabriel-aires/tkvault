@@ -250,22 +250,26 @@ oo::class create Gui {
     
     method left_content {frame} {
         set container   [::ttk::frame ${frame}.container]
-        set login_controls   [Controls new $container "Login" {gray 30}]
-        set card_controls    [Controls new $container "Card" {firebrick 3}]
-        set doc_controls     [Controls new $container "Document" {cyan 4}]
-        set note_controls    [Controls new $container "Note" {SlateBlue 2}]
+        set login_controls   [Controls new $container "Login" {gray 15}]
+        set card_controls    [Controls new $container "Card" {HotPink 4}]
+        set doc_controls     [Controls new $container "Document" {DodgerBlue 4}]
+        set note_controls    [Controls new $container "Note" {goldenrod 3}]
+        set income_controls  [Controls new $container "Income" {cyan 4}]
+        set expense_controls [Controls new $container "Expense" {firebrick 3}]
         pack $container -pady 2p
         pack [$login_controls get_container] -pady 1p -ipady 5p -fill x
         pack [$card_controls get_container] -pady 1p -ipady 5p -fill x
         pack [$doc_controls get_container] -pady 1p -ipady 5p -fill x
         pack [$note_controls get_container] -pady 1p -ipady 5p -fill x
+        pack [$income_controls get_container] -pady 1p -ipady 5p -fill x
+        pack [$expense_controls get_container] -pady 1p -ipady 5p -fill x        
     }
 
     method right_content {frame width} {
         set container   [::ttk::frame ${frame}.container -width $width]
         set favorites_folder    [Folder new $container "Favorites" ::img::favorites {firebrick 3}]
-        set archive_folder      [Folder new $container "Archive" ::img::archive {cyan 4}]
-        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {SlateBlue 2}]
+        set archive_folder      [Folder new $container "Archive" ::img::archive {bisque 4}]
+        set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {cyan 4}]
         pack $container -pady 2p -fill y -expand 1
         pack [$favorites_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
         pack [$archive_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
