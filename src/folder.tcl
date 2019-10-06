@@ -15,14 +15,14 @@ oo::class create Folder {
         set quantity            [$cframe add_label ${top}.quantity $ColorName $ColorIndex gray 100]
         set image               [$cframe add_label ${bottom}.image $ColorName $ColorIndex gray 100]
         
-        $title configure -text "$Label:" -font "regular"
+        $title configure -text " $Label:" -font "regular"
         $quantity configure -text $Quantity -font "regular"
         $image configure -image $Image -anchor center
         
         pack $Container -fill both
-        pack $top -fill both
+        pack $top -fill both -ipadx 2p -ipady 2p
         pack $bottom -fill both -expand 1
-        pack $title -side left -fill y -ipadx 2p -anchor w
+        pack $title -side left -fill both -ipadx 2p -anchor w
         pack $quantity -side left -fill y -expand 1 -ipadx 2p -anchor w
         pack $image -fill both -expand 1 -ipadx 20p
     }
