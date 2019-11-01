@@ -271,9 +271,9 @@ oo::class create Gui {
         set archive_folder      [Folder new $container "Archive" ::img::archive {bisque 4}]
         set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {cyan 4}]
         pack $container -pady 2p -fill y -expand 1
-        pack [$favorites_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
-        pack [$archive_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
-        pack [$recycle_folder get_container] -pady 5p -ipady 5p -fill both -expand 1
+        pack [$favorites_folder get_container] -pady 1p -ipady 5p -fill both -expand 1
+        pack [$archive_folder get_container] -pady 1p -ipady 5p -fill both -expand 1
+        pack [$recycle_folder get_container] -pady 1p -ipady 5p -fill both -expand 1
     }
     
     method main_content {frame} {

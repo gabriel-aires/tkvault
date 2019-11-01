@@ -23,7 +23,7 @@ oo::class create Folder {
         pack $top -fill both -ipadx 2p -ipady 2p
         pack $bottom -fill both -expand 1
         pack $title -side left -fill both -ipadx 2p -anchor w
-        pack $quantity -side left -fill y -expand 1 -ipadx 2p -anchor w
+        pack $quantity -side left -fill both -expand 1 -ipadx 2p -anchor w
         pack $image -fill both -expand 1 -ipadx 20p
     }
     
