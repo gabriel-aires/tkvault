@@ -5,13 +5,13 @@ oo::class create SFrame {
 
     constructor {path} {
         
-        set bg [::ttk::style lookup TFrame -background]
-        set Root [::ttk::frame $path]
+        set bg [ttk::style lookup TFrame -background]
+        set Root [ttk::frame $path]
         set Canvas [canvas ${Root}.canvas -bg $bg -bd 0 -highlightthickness 0 -yscrollcommand [list ${Root}.scroll set]]
-        set ScrollBar [::ttk::scrollbar ${Root}.scroll -orient vertical -command [list $Canvas yview]]
-        set Container [::ttk::frame ${Canvas}.container]
+        set ScrollBar [ttk::scrollbar ${Root}.scroll -orient vertical -command [list $Canvas yview]]
+        set Container [ttk::frame ${Canvas}.container]
         pack propagate $Container 0
-        set Content [::ttk::frame ${Container}.content]
+        set Content [ttk::frame ${Container}.content]
         pack $Content -anchor nw -fill both -expand 1
         $Canvas create window 0 0 -window $Container -anchor nw
         

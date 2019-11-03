@@ -141,14 +141,14 @@ oo::class create Gui {
         $Root title "ThunderVault"
         
         set state [State new]
-        set container [::ttk::labelframe .auth]
-        set top [::ttk::frame .auth.logo]
-        set logo [::ttk::label .auth.logo.img]
-        set bottom [::ttk::frame .auth.form]
-        set prompt [::ttk::label .auth.form.passwd_label]
-        set input [::ttk::entry .auth.form.passwd_entry]
-        set submit [::ttk::button .auth.form.submit]
-        set help [::ttk::label .auth.form.help]
+        set container [ttk::labelframe .auth]
+        set top [ttk::frame .auth.logo]
+        set logo [ttk::label .auth.logo.img]
+        set bottom [ttk::frame .auth.form]
+        set prompt [ttk::label .auth.form.passwd_label]
+        set input [ttk::entry .auth.form.passwd_entry]
+        set submit [ttk::button .auth.form.submit]
+        set help [ttk::label .auth.form.help]
         
         $container configure -text "Authentication"
         $logo configure -image ::img::logo
@@ -180,7 +180,7 @@ oo::class create Gui {
     }
      
     method update_theme {} {
-        ::ttk::style theme use $Theme
+        ttk::style theme use $Theme
     }
     
     method menubar {} {
@@ -223,7 +223,7 @@ oo::class create Gui {
             set id      [dict get $credentials $name]
             set cframe  [CFrame new ${content}.button_$name {puts click} 2]
             set left    [$cframe add_label [$cframe content].icon gray 30 gray 97]
-            set right   [::ttk::frame [$cframe content].info]
+            set right   [ttk::frame [$cframe content].info]
             set top     [$cframe add_label ${right}.name gray 97 gray 30]
             set bottom  [$cframe add_label ${right}.id gray 30 gray 97]
             set capital [string toupper [string index $name 0]]
@@ -246,7 +246,7 @@ oo::class create Gui {
     }
     
     method left_content {frame} {
-        set container   [::ttk::frame ${frame}.container]
+        set container   [ttk::frame ${frame}.container]
         set login_controls   [Controls new $container "Login" {gray 15}]
         set card_controls    [Controls new $container "Card" {HotPink 4}]
         set doc_controls     [Controls new $container "Document" {DodgerBlue 4}]
@@ -263,7 +263,7 @@ oo::class create Gui {
     }
 
     method right_content {frame width} {
-        set container   [::ttk::frame ${frame}.container -width $width]
+        set container   [ttk::frame ${frame}.container -width $width]
         set favorites_folder    [Folder new $container "Favorites" ::img::favorites {firebrick 3}]
         set archive_folder      [Folder new $container "Archive" ::img::archive {bisque 4}]
         set recycle_folder      [Folder new $container "Recycle Bin" ::img::basket {cyan 4}]
@@ -275,7 +275,7 @@ oo::class create Gui {
     
     method main_content {frame} {
         if [eq [$Vault count_credentials] 0] {
-            set logo [::ttk::label ${frame}.logo]
+            set logo [ttk::label ${frame}.logo]
             $logo configure -image ::img::watermark
             pack $logo -fill y -expand 1 -pady 5p
         } else {
@@ -285,9 +285,9 @@ oo::class create Gui {
     
     method footer_content {frame} {
         set state [State new]
-        set container [::ttk::frame ${frame}.section]
-        set message [::ttk::label ${container}.message]
-        set info [::ttk::label ${container}.info]
+        set container [ttk::frame ${frame}.section]
+        set message [ttk::label ${container}.message]
+        set info [ttk::label ${container}.info]
         $message configure -text "Vault Items: " -font "regular"
         $info configure -textvariable [$state var Notice] -font "regular"
         $state set Notice [$Vault count_credentials]
@@ -298,11 +298,11 @@ oo::class create Gui {
     method layout {} {
         my menubar
 
-        set body    [::ttk::frame .body]
-        set left    [::ttk::frame .body.side_controls]
-        set right   [::ttk::frame .body.side_folders]
-        set main    [::ttk::frame .body.main]
-        set footer  [::ttk::frame .body.footer -relief groove]        
+        set body    [ttk::frame .body]
+        set left    [ttk::frame .body.side_controls]
+        set right   [ttk::frame .body.side_folders]
+        set main    [ttk::frame .body.main]
+        set footer  [ttk::frame .body.footer -relief groove]        
         
         pack $body -fill both -expand 1
         pack $footer -side bottom -fill x

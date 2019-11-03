@@ -4,9 +4,9 @@ oo::class create Controls {
     constructor {parent name color} {
         lassign $color ColorName ColorIndex
         set Visibility          true
-        set Container           [::ttk::frame ${parent}.controls_$name]
+        set Container           [ttk::frame ${parent}.controls_$name]
         set ColorSelector       [CFrame new ${Container}.color {puts click} 0]
-        set TypeLabel           [::ttk::label ${Container}.label]
+        set TypeLabel           [ttk::label ${Container}.label]
         set DisplayInfo         [CFrame new ${Container}.display {puts click} 0]
         set VisibilitySwitch    [CFrame new ${Container}.visibility {puts click} 0]
         set AddCredential       [CFrame new ${Container}.add {puts click} 0]

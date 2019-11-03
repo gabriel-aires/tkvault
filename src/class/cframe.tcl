@@ -11,8 +11,8 @@ oo::class create CFrame {
         set Padding $padding
         set Labels {}
         set Command $cmd
-        set Root [::ttk::frame $path -relief groove]
-        set Content [::ttk::frame ${Root}.content]
+        set Root [ttk::frame $path -relief groove]
+        set Content [ttk::frame ${Root}.content]
         my bind_method $Root <Enter> colorize_labels $HoverColor
         my bind_method $Root <Leave> colorize_labels $ResetColor
         my bind_method $Root <ButtonPress-1> press $PressColor
@@ -33,7 +33,7 @@ oo::class create CFrame {
         my check_color $bgcolor $bgnum
         my check_color $fgcolor $fgnum
         lappend Labels $path $bgcolor $bgnum $fgcolor $fgnum
-        ::ttk::label $path -background "$bgcolor$bgnum" -foreground "$fgcolor$fgnum"
+        ttk::label $path -background "$bgcolor$bgnum" -foreground "$fgcolor$fgnum"
         my bind_method $path <ButtonPress-1> press $PressColor
         my bind_method $path <ButtonRelease-1> release $HoverColor
         return $path
