@@ -1,11 +1,11 @@
 #!/usr/bin/env tclsh8.6
 
-#environment setup
 namespace eval conf {
     set install_path [file dirname [file dirname $argv0]]
     set src_path [file join $install_path "src"]
     set lib_path [file join $install_path "lib"]
     set img_path [file join $install_path "img"]
+    set class_path [file join $src_path "class"]
     set home_path $env(HOME)
     set pkgs {menubar0.5 twapi4.3.5 breeze0.6}
     
@@ -24,6 +24,7 @@ namespace eval conf {
 package require sha1
 package require sqlite3
 package require blowfish
+
 namespace import ::tcl::mathop::*
 namespace import ::tcl::mathfunc::rand
 namespace import ::tcl::mathfunc::round
@@ -32,19 +33,11 @@ namespace import ::tcl::mathfunc::ceil
 namespace import ::tcl::mathfunc::double
 namespace import ::tcl::mathfunc::int
 namespace import ::tcl::mathfunc::sqrt
-source [file join $conf::src_path crypto.tcl]
-source [file join $conf::src_path vault.tcl]
-source [file join $conf::src_path state.tcl]
-source [file join $conf::src_path colors.tcl]
-source [file join $conf::src_path window.tcl]
-source [file join $conf::src_path sframe.tcl]
-source [file join $conf::src_path cframe.tcl]
-source [file join $conf::src_path controls.tcl]
-source [file join $conf::src_path folder.tcl]
-source [file join $conf::src_path gui.tcl]
-source [file join $conf::src_path cli.tcl]
-source [file join $conf::src_path controller.tcl]
 
-#run application
+foreach class [glob $conf::class_path/*] {
+    puts $class
+    source $class
+}
+
 set vault [Vault new $conf::db_path $conf::db_sql $conf::max_size]
 set controller [Controller new $conf::command $conf::target $vault]
