@@ -22,10 +22,6 @@ oo::class create Controller {
             -h      {set Operation "help"}
             default {set Mode "GUI"}
         }
-
-        if {$::tcl_platform(platform) == "windows"} {
-            package require twapi
-        }
         
         if {$Mode == "CLI"} {
             set Ui [Cli new $Vault $Operation $Target [self]]

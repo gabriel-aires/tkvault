@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS "credential" (
     "name_time"     INTEGER,
     "identity"	    TEXT,
     "identity_key"  TEXT,
-    "identity_time" INTEGER,    
+    "identity_time" INTEGER,
     "password"	    TEXT,
     "password_key"  TEXT,
     "password_time" INTEGER

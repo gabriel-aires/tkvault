@@ -46,8 +46,6 @@ namespace eval conf {
 package require sha1
 package require sqlite3
 package require blowfish
-
-#import common commands
 namespace import ::tcl::mathop::*
 namespace import ::tcl::mathfunc::rand
 namespace import ::tcl::mathfunc::round
@@ -56,6 +54,36 @@ namespace import ::tcl::mathfunc::ceil
 namespace import ::tcl::mathfunc::double
 namespace import ::tcl::mathfunc::int
 namespace import ::tcl::mathfunc::sqrt
+
+#load conditional dependencies
+if {$::tcl_platform(platform) == "windows"} {
+    package require twapi
+}
+
+if {$conf::command == {}} {
+    package require Tk
+    package require menubar
+    package require ttk::theme::Breeze
+    namespace import ::ttk::button
+    namespace import ::ttk::checkbutton
+    namespace import ::ttk::combobox
+    namespace import ::ttk::entry
+    namespace import ::ttk::frame
+    namespace import ::ttk::label
+    namespace import ::ttk::labelframe
+    namespace import ::ttk::menubutton
+    namespace import ::ttk::notebook
+    namespace import ::ttk::panedwindow
+    namespace import ::ttk::progressbar
+    namespace import ::ttk::radiobutton
+    namespace import ::ttk::scale
+    namespace import ::ttk::scrollbar
+    namespace import ::ttk::separator
+    namespace import ::ttk::sizegrip
+    namespace import ::ttk::spinbox
+    namespace import ::ttk::style
+    namespace import ::ttk::treeview
+}
 
 #source classes
 foreach class $conf::classes {

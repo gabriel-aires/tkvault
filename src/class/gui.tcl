@@ -4,9 +4,6 @@ oo::class create Gui {
         RegularFont MonospaceFont
     
     constructor {vault operation target controller} {
-        package require Tk
-        package require menubar
-        package require ttk::theme::Breeze
         set Vault $vault
         set Operation $operation
         set Target $target
