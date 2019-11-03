@@ -59,7 +59,7 @@ namespace import ::tcl::mathfunc::sqrt
 
 #source classes
 foreach class $conf::classes {
-    source [file join $conf::class_path $class]
+    source [file join $conf::class_path "$class.tcl"]
 }
 
 #initialize vault and controller
